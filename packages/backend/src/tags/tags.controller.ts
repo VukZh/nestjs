@@ -13,23 +13,20 @@ import { CreatedTagType, TagType } from "../models/tag";
 
 @Controller('tags')
 export class TagsController {
-
-  constructor(private readonly tagsService: TagsService) {
-
-  }
+  constructor(private readonly tagsService: TagsService) {}
 
   @Get()
   getAll() {
-    return this.tagsService.getAll()
+    return this.tagsService.getAll();
   }
 
   @Post()
-  createTag(@Body() tag: CreatedTagType){
-    return this.tagsService.createTag(tag)
+  createTag(@Body() tag: CreatedTagType) {
+    return this.tagsService.createTag(tag);
   }
 
   @Patch(':id')
-  updateTag(@Param('') id: string, @Body() tag: TagType){
+  updateTag(@Param('id') id: string, @Body() tag: TagType) {
     const result = this.tagsService.updateTagById(id, tag);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
@@ -39,7 +36,7 @@ export class TagsController {
   }
 
   @Delete(':id')
-  deleteTag(@Param('') id: string){
+  deleteTag(@Param('id') id: string) {
     const result = this.tagsService.deleteTagById(id);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
@@ -49,10 +46,9 @@ export class TagsController {
   }
 
   @Get(':id')
-  getTag(@Param('') id: string){
+  getTag(@Param('id') id: string) {
     const result = this.tagsService.getTagById(id);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return result;
   }
-
 }

@@ -3,6 +3,7 @@ import './App.css';
 import { Accordion, AccordionControl, AppShell } from '@mantine/core';
 import { Users } from './components/Users.tsx';
 import { Comments } from './components/Comments.tsx';
+import { Tags } from './components/Tags.tsx';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -48,7 +49,9 @@ function App() {
           <Accordion.Item value="tags">
             {' '}
             <AccordionControl>Tags</AccordionControl>
-            <Accordion.Panel>Panel 1</Accordion.Panel>
+            <Accordion.Panel>
+              <Tags />
+            </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="comments">
             {' '}
