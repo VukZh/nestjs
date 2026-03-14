@@ -25,6 +25,7 @@ export class CommentsService {
   }
 
   getCommentById(id: string) {
+    this.logger.debug(`get comment ${JSON.stringify(id)}`);
     const commentExists = this.comments.some((comment) => comment?.id === id);
     if (!commentExists) return null;
 

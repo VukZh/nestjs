@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { Accordion, AccordionControl, AppShell } from '@mantine/core';
 import { Users } from './components/Users.tsx';
+import { Comments } from './components/Comments.tsx';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -35,7 +36,9 @@ function App() {
         >
           <Accordion.Item value="users">
             <AccordionControl>Users</AccordionControl>
-            <Accordion.Panel><Users /></Accordion.Panel>
+            <Accordion.Panel>
+              <Users />
+            </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tasks">
             {' '}
@@ -50,7 +53,9 @@ function App() {
           <Accordion.Item value="comments">
             {' '}
             <AccordionControl>Comments</AccordionControl>
-            <Accordion.Panel>Panel 1</Accordion.Panel>
+            <Accordion.Panel>
+              <Comments />
+            </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
       </AppShell.Main>

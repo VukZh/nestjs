@@ -4,22 +4,20 @@ import { CommentType, CreatedCommentType } from "../models/comment";
 
 @Controller('comments')
 export class CommentsController {
-
-  constructor(private readonly commentService: CommentsService) {
-  }
+  constructor(private readonly commentService: CommentsService) {}
 
   @Get()
   getAll() {
-    return this.commentService.getAll()
+    return this.commentService.getAll();
   }
 
   @Post()
   createComment(@Body() comment: CreatedCommentType) {
-    return this.commentService.createComment(comment)
+    return this.commentService.createComment(comment);
   }
 
   @Patch(':id')
-  updateComment(@Param() id: string, @Body() comment: CommentType){
+  updateComment(@Param('id') id: string, @Body() comment: CommentType) {
     const result = this.commentService.updateCommentById(id, comment);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
@@ -29,7 +27,7 @@ export class CommentsController {
   }
 
   @Delete(':id')
-  deleteComment(@Param() id: string){
+  deleteComment(@Param('id') id: string) {
     const result = this.commentService.deleteCommentById(id);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
@@ -39,10 +37,10 @@ export class CommentsController {
   }
 
   @Get(':id')
-  getComment(@Param() id: string){
+  getComment(@Param('id') id: string) {
+    console.log(id);
     const result = this.commentService.getCommentById(id);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return result;
   }
-
 }
