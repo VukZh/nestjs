@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TasksService } from "./tasks.service";
 import { CreatedTaskType, TaskType } from "../models/task";
 
@@ -6,7 +15,6 @@ import { CreatedTaskType, TaskType } from "../models/task";
 export class TasksController {
 
   constructor(private readonly tasksService: TasksService) {
-
   }
 
   @Get()
@@ -21,17 +29,29 @@ export class TasksController {
 
   @Patch(':id')
   updateTask(@Param('id') id: string, @Body() task: TaskType) {
-    return this.tasksService.updateTaskById(id, task);
+    const result = this.tasksService.updateTaskById(id, task);
+    if (!result) throw new NotFoundException(`Task ${id} not found`);
+    return {
+      message: 'Task updated successfully',
+      user: result,
+    };
   }
 
   @Delete(':id')
   deleteTask(@Param('id') id: string){
-    return this.tasksService.deleteTaskById(id);
+    const result = this.tasksService.deleteTaskById(id);
+    if (!result) throw new NotFoundException(`Task ${id} not found`);
+    return {
+      message: 'Task deleted successfully',
+      user: result,
+    };
   }
 
   @Get(':id')
   getTask(@Param('id') id: string) {
-    return this.tasksService.getTaskById(id);
+    const result = this.tasksService.getTaskById(id);
+    if (!result) throw new NotFoundException(`Task ${id} not found`);
+    return result;
   }
 
 }

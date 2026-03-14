@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { CommentsService } from "./comments.service";
 import { CommentType, CreatedCommentType } from "../models/comment";
 
@@ -20,17 +20,29 @@ export class CommentsController {
 
   @Patch(':id')
   updateComment(@Param() id: string, @Body() comment: CommentType){
-    return this.commentService.updateCommentById(id, comment)
+    const result = this.commentService.updateCommentById(id, comment);
+    if (!result) throw new NotFoundException(`Comment ${id} not found`);
+    return {
+      message: 'Comment updated successfully',
+      user: result,
+    };
   }
 
-  @Delete()
+  @Delete(':id')
   deleteComment(@Param() id: string){
-    return this.commentService.deleteCommentById(id)
+    const result = this.commentService.deleteCommentById(id);
+    if (!result) throw new NotFoundException(`Comment ${id} not found`);
+    return {
+      message: 'Comment deleted successfully',
+      user: result,
+    };
   }
 
   @Get(':id')
   getComment(@Param() id: string){
-    return this.commentService.getCommentById(id)
+    const result = this.commentService.getCommentById(id);
+    if (!result) throw new NotFoundException(`Comment ${id} not found`);
+    return result;
   }
 
 }
