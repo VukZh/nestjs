@@ -5,6 +5,7 @@ import { Users } from './components/Users.tsx';
 import { Comments } from './components/Comments.tsx';
 import { Tags } from './components/Tags.tsx';
 import { Tasks } from './components/Tasks.tsx';
+import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -32,7 +33,7 @@ function App() {
       <AppShell.Main style={{ paddingTop: '24px' }}>
         <Accordion
           multiple
-          defaultValue={['users', 'tasks', 'tags', 'comments']}
+          // defaultValue={['users', 'tasks', 'tags', 'comments']}
           chevronPosition="left"
         >
           <Accordion.Item value="users">
@@ -71,6 +72,7 @@ function App() {
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
+        <ActionsOnTasks />
       </AppShell.Main>
     </AppShell>
   );
