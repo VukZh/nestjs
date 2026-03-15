@@ -4,6 +4,7 @@ import { Accordion, AccordionControl, AppShell } from '@mantine/core';
 import { Users } from './components/Users.tsx';
 import { Comments } from './components/Comments.tsx';
 import { Tags } from './components/Tags.tsx';
+import { Tasks } from './components/Tasks.tsx';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -11,7 +12,6 @@ function App() {
   const [msg, setMsg] = useState('');
 
   console.log('msg', msg);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,26 +36,36 @@ function App() {
           chevronPosition="left"
         >
           <Accordion.Item value="users">
-            <AccordionControl>Users</AccordionControl>
+            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+              Users
+            </AccordionControl>
             <Accordion.Panel>
               <Users />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tasks">
             {' '}
-            <AccordionControl>Tasks</AccordionControl>
-            <Accordion.Panel>Panel 1</Accordion.Panel>
+            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+              Tasks
+            </AccordionControl>
+            <Accordion.Panel>
+              <Tasks />
+            </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tags">
             {' '}
-            <AccordionControl>Tags</AccordionControl>
+            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+              Tags
+            </AccordionControl>
             <Accordion.Panel>
               <Tags />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="comments">
             {' '}
-            <AccordionControl>Comments</AccordionControl>
+            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+              Comments
+            </AccordionControl>
             <Accordion.Panel>
               <Comments />
             </Accordion.Panel>
