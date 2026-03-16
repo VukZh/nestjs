@@ -27,7 +27,7 @@ export class TagsController {
 
   @Patch(':id')
   updateTag(@Param('id') id: string, @Body() tag: TagType) {
-    const result = this.tagsService.updateTagById(id, tag);
+    const result = this.tagsService.updateTagById(+id, tag);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag updated successfully',
@@ -37,7 +37,7 @@ export class TagsController {
 
   @Delete(':id')
   deleteTag(@Param('id') id: string) {
-    const result = this.tagsService.deleteTagById(id);
+    const result = this.tagsService.deleteTagById(+id);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag deleted successfully',
@@ -47,7 +47,7 @@ export class TagsController {
 
   @Get(':id')
   getTag(@Param('id') id: string) {
-    const result = this.tagsService.getTagById(id);
+    const result = this.tagsService.getTagById(+id);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return result;
   }

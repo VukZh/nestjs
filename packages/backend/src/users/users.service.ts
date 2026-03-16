@@ -1,56 +1,55 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreatedUserType, UserType } from '../models/user';
+import { DBService } from '../db/db.service';
 
 @Injectable()
 export class UsersService {
-  private users: UserType[] = [];
+
+  constructor(private readonly prisma: DBService) {}
 
   private readonly logger = new Logger(UsersService.name);
 
-  getAll() {
+  async getAll() {
+    const users = await this.prisma.user.findMany();
     this.logger.debug('get all users');
-    return this.users;
+    return users;
   }
-  createUser(user: CreatedUserType) {
-    this.users.push({
-      ...user,
-      id: (Math.floor(Math.random() * (1000000 - 1 + 1)) + 1).toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
+  async createUser(user: CreatedUserType) {
+    const createdUser = await this.prisma.user.create({
+      data: { ...user, createdAt: new Date(), updatedAt: new Date(), deletedAt: null },
     });
     this.logger.debug('add user', user);
 
-    return user;
+    return createdUser;
   }
-  getUserById(id: string) {
-    const userExists = this.users.some((user) => user?.id === id);
+  async getUserById(id: number) {
+    const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 
     this.logger.debug(`get user ${id}`);
-    return this.users.find((user) => user?.id === id);
+    return userExists;
   }
-  deleteUserById(id: string) {
-    const userExists = this.users.some((user) => user?.id === id);
+  async deleteUserById(id: number) {
+    const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 
-    this.users = this.users.map((user) =>
-      user.id === id ? { ...user, deletedAt: new Date().toISOString() } : user,
-    );
+    await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date().toISOString() },
+    })
 
     this.logger.debug(`delete user ${id}`);
-
     return id;
   }
-  updateUserById(id: string, userUpdated: UserType) {
-    const userExists = this.users.some((user) => user?.id === id);
+  async updateUserById(id: number, userUpdated: UserType) {
+    // const userExists = this.users.some((user) => user?.id === id);
+    const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 
-    this.users = this.users.map((user) =>
-      user.id === id
-        ? { ...userUpdated, updatedAt: new Date().toISOString() }
-        : user,
-    );
+    await this.prisma.user.update({
+      where: { id },
+      data: { ...userUpdated, id: +userUpdated.id!, updatedAt: new Date().toISOString() },
+    })
     this.logger.debug(`update user ${id}`);
     return id;
   }

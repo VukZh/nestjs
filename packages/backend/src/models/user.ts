@@ -2,7 +2,7 @@ type UserRoleType = 'user'|'admin'|'author'
 type UserStatusType = 'active'|'blocked'
 
 export type UserType = {
-  id: string,
+  id?: number,
   name: string,
   email: string,
   role: UserRoleType,

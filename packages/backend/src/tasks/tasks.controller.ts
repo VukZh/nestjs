@@ -29,7 +29,7 @@ export class TasksController {
 
   @Patch(':id')
   updateTask(@Param('id') id: string, @Body() task: TaskType) {
-    const result = this.tasksService.updateTaskById(id, task);
+    const result = this.tasksService.updateTaskById(+id, task);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task updated successfully',
@@ -39,7 +39,7 @@ export class TasksController {
 
   @Delete(':id')
   deleteTask(@Param('id') id: string){
-    const result = this.tasksService.deleteTaskById(id);
+    const result = this.tasksService.deleteTaskById(+id);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task deleted successfully',
@@ -49,7 +49,7 @@ export class TasksController {
 
   @Get(':id')
   getTask(@Param('id') id: string) {
-    const result = this.tasksService.getTaskById(id);
+    const result = this.tasksService.getTaskById(+id);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return result;
   }

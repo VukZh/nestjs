@@ -1,7 +1,7 @@
 type TaskStatusType = 'draft'|'published';
 
 export type TaskType = {
-  id: string;
+  id?: number;
   title: string;
   content: string;
   status: TaskStatusType;

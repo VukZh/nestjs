@@ -29,7 +29,7 @@ export class UsersController {
 
   @Patch(':id')
   updateUser(@Param('id') id: string, @Body() user: UserType) {
-    const result = this.usersService.updateUserById(id, user);
+    const result = this.usersService.updateUserById(+id, user);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User updated successfully',
@@ -39,7 +39,7 @@ export class UsersController {
 
   @Delete(':id')
   deleteUser(@Param('id') id: string) {
-    const result = this.usersService.deleteUserById(id);
+    const result = this.usersService.deleteUserById(+id);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User deleted successfully',
@@ -49,7 +49,7 @@ export class UsersController {
 
   @Get(':id')
   getUser(@Param('id') id: string) {
-    const result = this.usersService.getUserById(id);
+    const result = this.usersService.getUserById(+id);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return result;
   }

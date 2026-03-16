@@ -4,56 +4,61 @@ import { DBService } from '../db/db.service';
 
 @Injectable()
 export class TagsService {
-  private tags: TagType[] = [];
   private logger = new Logger(TagsService.name);
 
   constructor(private prisma: DBService) {}
 
-  getAll() {
-    this.logger.debug('get all tags', this.prisma.tag.findMany());
-    return this.tags;
+  async getAll() {
+    const tags = await this.prisma.tag.findMany();
+    this.logger.debug('get all tags', tags);
+    return tags;
   }
 
-  createTag(tag: CreatedTagType) {
-    this.tags.push({
-      ...tag,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
+  async createTag(tag: CreatedTagType) {
+    const createdTag = await this.prisma.tag.create({
+      data: {
+        ...tag,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+      },
     });
-    this.logger.debug('add tag', tag);
-
-    return tag;
+    this.logger.debug('add tag', createdTag);
+    return createdTag;
   }
 
-  getTagById(id: string) {
-    const tagExists = this.tags.some((tag) => tag?.id === id);
+  async getTagById(id: number) {
+    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
     if (!tagExists) return null;
 
     this.logger.debug(`get tag ${id}`);
-    return this.tags.find((tag) => tag?.id === id);
+    return tagExists;
   }
 
-  deleteTagById(id: string) {
-    const tagExists = this.tags.some((tag) => tag?.id === id);
+  async deleteTagById(id: number) {
+    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
     if (!tagExists) return null;
 
-    this.tags = this.tags.map((tag) =>
-      tag.id === id ? { ...tag, deletedAt: new Date().toISOString() } : tag,
-    );
+    await this.prisma.tag.update({
+      where: { id },
+      data: { deletedAt: new Date().toISOString() },
+    });
     this.logger.debug(`delete tag ${id}`);
     return id;
   }
 
-  updateTagById(id: string, tagUpdated: TagType) {
-    const tagExists = this.tags.some((tag) => tag?.id === id);
+  async updateTagById(id: number, tagUpdated: TagType) {
+    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
     if (!tagExists) return null;
 
-    this.tags = this.tags.map((tag) =>
-      tag.id === id
-        ? { ...tagUpdated, updatedAt: new Date().toISOString() }
-        : tag,
-    );
+    await this.prisma.tag.update({
+      where: { id },
+      data: {
+        ...tagUpdated,
+        id: +tagUpdated.id!,
+        updatedAt: new Date().toISOString(),
+      },
+    });
     this.logger.debug(`update tag ${id}`);
     return id;
   }

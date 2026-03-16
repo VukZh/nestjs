@@ -18,7 +18,7 @@ export class CommentsController {
 
   @Patch(':id')
   updateComment(@Param('id') id: string, @Body() comment: CommentType) {
-    const result = this.commentService.updateCommentById(id, comment);
+    const result = this.commentService.updateCommentById(+id, comment);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment updated successfully',
@@ -28,7 +28,7 @@ export class CommentsController {
 
   @Delete(':id')
   deleteComment(@Param('id') id: string) {
-    const result = this.commentService.deleteCommentById(id);
+    const result = this.commentService.deleteCommentById(+id);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment deleted successfully',
@@ -39,7 +39,7 @@ export class CommentsController {
   @Get(':id')
   getComment(@Param('id') id: string) {
     console.log(id);
-    const result = this.commentService.getCommentById(id);
+    const result = this.commentService.getCommentById(+id);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return result;
   }

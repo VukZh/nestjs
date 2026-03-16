@@ -1,60 +1,66 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { CreatedTaskType, TaskType } from '../models/task'
+import { CreatedTaskType, TaskType } from '../models/task';
+import { DBService } from '../db/db.service';
 
 @Injectable()
 export class TasksService {
-  private tasks: TaskType[] = [];
+  constructor(private prisma: DBService) {}
 
   private readonly logger = new Logger(TasksService.name);
 
-  getAll() {
+  async getAll() {
+    const tasks = await this.prisma.task.findMany();
     this.logger.debug('get all tasks');
-    return this.tasks;
+    return tasks;
   }
 
-  createTask(task: CreatedTaskType) {
-    this.tasks.push({
-      ...task,
-      id: (Math.floor(Math.random() * (1000000 - 1 + 1)) + 1).toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
+  async createTask(task: CreatedTaskType) {
+    const createdTask = await this.prisma.task.create({
+      data: {
+        ...task,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+      },
     });
-    this.logger.debug('add task', task);
+    this.logger.debug('add task', createdTask);
 
-    return task;
+    return createdTask;
   }
 
-  getTaskById(id: string) {
-    const taskExists = this.tasks.some((task) => task?.id === id);
+  async getTaskById(id: number) {
+    const taskExists = await this.prisma.task.findUnique({ where: { id } });
     if (!taskExists) return null;
 
     this.logger.debug(`get task ${id}`);
-    return this.tasks.find((task) => task?.id === id);
+    return taskExists;
   }
 
-  deleteTaskById(id: string) {
-    const taskExists = this.tasks.some((task) => task?.id === id);
+  async deleteTaskById(id: number) {
+    const taskExists = await this.prisma.task.findUnique({ where: { id } });
     if (!taskExists) return null;
 
-    this.tasks = this.tasks.map((task) =>
-      task.id === id ? { ...task, deletedAt: new Date().toISOString() } : task,
-    );
-
+    await this.prisma.task.update({
+      where: { id },
+      data: { deletedAt: new Date().toISOString() },
+    });
     this.logger.debug(`delete task ${id}`);
+    return id;
+  }
 
-    return id;  }
-
-  updateTaskById(id: string, taskUpdated: TaskType) {
-    const taskExists = this.tasks.some((task) => task?.id === id);
+  async updateTaskById(id: number, taskUpdated: TaskType) {
+    const taskExists = await this.prisma.task.findUnique({ where: { id } });
     if (!taskExists) return null;
 
-    this.tasks = this.tasks.map((task) =>
-      task.id === id
-        ? { ...taskUpdated, updatedAt: new Date().toISOString() }
-        : task,
-    );
+    await this.prisma.task.update({
+      where: { id },
+      data: {
+        ...taskUpdated,
+        id: +taskUpdated.id!,
+        updatedAt: new Date().toISOString(),
+      },
+    });
     this.logger.debug(`update task ${id}`);
     return id;
   }

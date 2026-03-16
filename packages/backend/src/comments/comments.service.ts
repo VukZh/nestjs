@@ -1,60 +1,66 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CommentType, CreatedCommentType } from '../models/comment';
+import { DBService } from '../db/db.service';
 
 @Injectable()
 export class CommentsService {
-  private comments: CommentType[] = [];
   private logger = new Logger(CommentsService.name);
 
-  getAll() {
+  constructor(private prisma: DBService) {}
+
+  async getAll() {
+    const comments = await this.prisma.comment.findMany();
     this.logger.debug('get all comments');
-    return this.comments;
+    return comments;
   }
 
-  createComment(comment: CreatedCommentType) {
-    this.comments.push({
-      ...comment,
-      id: (Math.floor(Math.random() * (1000000 - 1 + 1)) + 1).toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      deletedAt: null,
+  async createComment(comment: CreatedCommentType) {
+    const createdComment = await this.prisma.comment.create({
+      data: {
+        ...comment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+      },
     });
-    this.logger.debug('add comment', comment);
+    this.logger.debug('add comment', createdComment);
 
-    return comment;
+    return createdComment;
   }
 
-  getCommentById(id: string) {
-    this.logger.debug(`get comment ${JSON.stringify(id)}`);
-    const commentExists = this.comments.some((comment) => comment?.id === id);
+  async getCommentById(id: number) {
+    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
     if (!commentExists) return null;
 
     this.logger.debug(`get comment ${id}`);
-    return this.comments.find((comment) => comment?.id === id);
+    return commentExists;
   }
 
-  deleteCommentById(id: string) {
-    const commentExists = this.comments.some((comment) => comment?.id === id);
+  async deleteCommentById(id: number) {
+    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
     if (!commentExists) return null;
 
-    this.comments = this.comments.map((comment) =>
-      comment.id === id
-        ? { ...comment, deletedAt: new Date().toISOString() }
-        : comment,
-    );
+    await this.prisma.comment.update({
+      where: { id },
+      data: { deletedAt: new Date().toISOString() },
+    });
+
     this.logger.debug(`delete comment ${id}`);
     return id;
   }
 
-  updateCommentById(id: string, updatedComment: CommentType) {
-    const commentExists = this.comments.some((comment) => comment?.id === id);
+  async updateCommentById(id: number, updatedComment: CommentType) {
+    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
     if (!commentExists) return null;
 
-    this.comments = this.comments.map((comment) =>
-      comment.id === id
-        ? { ...updatedComment, updatedAt: new Date().toISOString() }
-        : comment,
-    );
+    await this.prisma.comment.update({
+      where: { id },
+      data: {
+        ...updatedComment,
+        id: +updatedComment.id!,
+        updatedAt: new Date().toISOString(),
+      },
+    });
     this.logger.debug(`update comment ${id}`);
     return id;
   }

@@ -1,7 +1,7 @@
 type CommentStatusType = 'visible' | 'hidden'
 
 export type CommentType = {
-  id: string
+  id?: number
   status: CommentStatusType
   authorId: string
   createdAt: string
