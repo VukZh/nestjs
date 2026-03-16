@@ -1,5 +1,5 @@
 export type TagType = {
-  id: string;
+  id?: string;
   tag: string;
   createdAt: string;
   updatedAt: string;

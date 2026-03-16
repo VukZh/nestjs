@@ -1,20 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreatedTagType, TagType } from "../models/tag";
+import { DBService } from '../db/db.service';
 
 @Injectable()
 export class TagsService {
   private tags: TagType[] = [];
   private logger = new Logger(TagsService.name);
 
+  constructor(private prisma: DBService) {}
+
   getAll() {
-    this.logger.debug('get all tags');
+    this.logger.debug('get all tags', this.prisma.tag.findMany());
     return this.tags;
   }
 
   createTag(tag: CreatedTagType) {
     this.tags.push({
       ...tag,
-      id: (Math.floor(Math.random() * (1000000 - 1 + 1)) + 1).toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       deletedAt: null,

@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Comment {
+  id        Int               @id @default(autoincrement())
+  status    CommentStatusType
+  authorId  String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  deletedAt DateTime?
+}
+
+enum CommentStatusType {
+  visible
+  hidden
+}
+
+model Tag {
+  id        Int       @id @default(autoincrement())
+  tag       String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Task {
+  id        Int            @id @default(autoincrement())
+  title     String
+  content   String
+  status    TaskStatusType
+  authorId  String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+}
+
+enum TaskStatusType {
+  draft
+  published
+}
+
+model User {
+  id        Int            @id @default(autoincrement())
+  name      String
+  email     String         @unique
+  role      UserRoleType
+  status    UserStatusType
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+}
+
+enum UserRoleType {
+  user
+  admin
+  author
+}
+
+enum UserStatusType {
+  active
+  blocked
+}
