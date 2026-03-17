@@ -31,13 +31,13 @@ export const Tags = () => {
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      tag: '',
+      name: '',
     },
   });
   const formEdit = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      tag: '',
+      name: '',
     },
   });
   const handleReload = async () => {
@@ -66,18 +66,18 @@ export const Tags = () => {
     }
   };
   const handleAdd = async (
-    values: Pick<TagType, 'tag'>,
+    values: Pick<TagType, 'name'>,
   ) => {
     console.log(values);
     try {
-      const { tag } = values;
+      const { name } = values;
       const resp = await fetch(`http://localhost:${PORT}/tags`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tag,
+          name,
         }),
       });
       if (!resp.ok) {
@@ -145,10 +145,10 @@ export const Tags = () => {
   }, [selectedTag]);
 
   const handleUpdate = async (
-    values: Pick<TagType, 'tag'>,
+    values: Pick<TagType, 'name'>,
   ) => {
     try {
-      const { tag } = values;
+      const { name } = values;
       const resp = await fetch(
         `http://localhost:${PORT}/tags/${selectedTag}`,
         {
@@ -157,7 +157,7 @@ export const Tags = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tag,
+            name,
             id: selectedTag
           }),
         },
@@ -223,7 +223,7 @@ export const Tags = () => {
       <Modal opened={opened} onClose={close} title="Add" centered>
         <form
           onSubmit={form.onSubmit((values) =>
-            handleAdd(values as Pick<TagType, 'tag'>),
+            handleAdd(values as Pick<TagType, 'name'>),
           )}
         >
           <TextInput
@@ -242,7 +242,7 @@ export const Tags = () => {
       <Modal opened={openedEdit} onClose={closeEdit} title="Edit" centered>
         <form
           onSubmit={formEdit.onSubmit((values) =>
-            handleUpdate(values as Pick<TagType, 'tag'>),
+            handleUpdate(values as Pick<TagType, 'name'>),
           )}
         >
           <TextInput
@@ -272,7 +272,7 @@ const rows = (elements: TagType[]) => {
   return elements.map((element) => (
     <Table.Tr key={element.id}>
       <Table.Td>{element.id}</Table.Td>
-      <Table.Td>{element.tag}</Table.Td>
+      <Table.Td>{element.name}</Table.Td>
     </Table.Tr>
   ));
 };

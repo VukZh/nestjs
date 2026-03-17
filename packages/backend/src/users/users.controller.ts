@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { UsersService } from "./users.service";
-import { CreatedUserType, UserType } from '../models/user';
+import { CreatedUserType, UpdatedUserType, UserType } from '../models/user';
 
 @Controller('users')
 export class UsersController {
@@ -28,7 +28,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  updateUser(@Param('id') id: string, @Body() user: UserType) {
+  updateUser(@Param('id') id: string, @Body() user: UpdatedUserType) {
     const result = this.usersService.updateUserById(+id, user);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {

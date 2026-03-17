@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { TagsService } from "./tags.service";
-import { CreatedTagType, TagType } from "../models/tag";
+import { CreatedTagType, TagType, UpdatedTagType } from '../models/tag';
 
 @Controller('tags')
 export class TagsController {
@@ -26,7 +26,7 @@ export class TagsController {
   }
 
   @Patch(':id')
-  updateTag(@Param('id') id: string, @Body() tag: TagType) {
+  updateTag(@Param('id') id: string, @Body() tag: UpdatedTagType) {
     const result = this.tagsService.updateTagById(+id, tag);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {

@@ -15,7 +15,11 @@ datasource db {
 model Comment {
   id        Int               @id @default(autoincrement())
   status    CommentStatusType
-  authorId  String
+  authorId  Int
+  author    User              @relation("UserComments", fields: [authorId], references: [id])
+  content   String
+  taskId    Int
+  task      Task              @relation("TaskComments", fields: [taskId], references: [id])
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
   deletedAt DateTime?
@@ -28,7 +32,8 @@ enum CommentStatusType {
 
 model Tag {
   id        Int       @id @default(autoincrement())
-  tag       String
+  name      String    @unique
+  tasks     Task[]    @relation("TaskTags")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -39,7 +44,10 @@ model Task {
   title     String
   content   String
   status    TaskStatusType
-  authorId  String
+  authorId  Int
+  author    User           @relation("UserTasks", fields: [authorId], references: [id])
+  tags      Tag[]          @relation("TaskTags")
+  comments  Comment[]      @relation("TaskComments")
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
@@ -56,6 +64,8 @@ model User {
   email     String         @unique
   role      UserRoleType
   status    UserStatusType
+  tasks     Task[]         @relation("UserTasks")
+  comments  Comment[]      @relation("UserComments")
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?

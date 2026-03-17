@@ -34,6 +34,7 @@ export const Comments = () => {
     initialValues: {
       authorId: '',
       status: '',
+      content: '',
     },
   });
   const formEdit = useForm({
@@ -41,6 +42,7 @@ export const Comments = () => {
     initialValues: {
       authorId: '',
       status: '',
+      content: '',
     },
   });
   const handleReload = async () => {
@@ -69,10 +71,10 @@ export const Comments = () => {
     }
   };
   const handleAdd = async (
-    values: Pick<CommentType, 'status' | 'authorId'>,
+    values: Pick<CommentType, 'status' | 'authorId' | 'content'>,
   ) => {
     try {
-      const { authorId, status } = values;
+      const { authorId, status, content } = values;
       const resp = await fetch(`http://localhost:${PORT}/comments`, {
         method: 'POST',
         headers: {
@@ -81,6 +83,7 @@ export const Comments = () => {
         body: JSON.stringify({
           authorId,
           status,
+          content,
         }),
       });
       if (!resp.ok) {
@@ -227,7 +230,9 @@ export const Comments = () => {
       <Modal opened={opened} onClose={close} title="Add" centered>
         <form
           onSubmit={form.onSubmit((values) =>
-            handleAdd(values as Pick<CommentType, 'status' | 'authorId'>),
+            handleAdd(
+              values as Pick<CommentType, 'status' | 'authorId' | 'content'>,
+            ),
           )}
         >
           <TextInput
@@ -247,6 +252,13 @@ export const Comments = () => {
             {...form.getInputProps('status')}
           />
 
+          <TextInput
+            label="Comment"
+            placeholder="comment"
+            key={form.key('comment')}
+            {...form.getInputProps('comment')}
+          />
+
           <Group justify="flex-end" mt="md">
             <Button type="submit">Add</Button>
           </Group>
@@ -255,7 +267,9 @@ export const Comments = () => {
       <Modal opened={openedEdit} onClose={closeEdit} title="Edit" centered>
         <form
           onSubmit={formEdit.onSubmit((values) =>
-            handleUpdate(values as Pick<CommentType, 'status' | 'authorId'>),
+            handleUpdate(
+              values as Pick<CommentType, 'status' | 'authorId' | 'content'>,
+            ),
           )}
         >
           <TextInput
@@ -273,6 +287,13 @@ export const Comments = () => {
             {...formEdit.getInputProps('status')}
           />
 
+          <TextInput
+            label="Comment"
+            placeholder="comment"
+            key={formEdit.key('comment')}
+            {...formEdit.getInputProps('comment')}
+          />
+
           <Group justify="flex-end" mt="md">
             <Button type="submit">Edit</Button>
           </Group>
@@ -287,6 +308,7 @@ const head = (
     <Table.Th>id</Table.Th>
     <Table.Th>authorId</Table.Th>
     <Table.Th>status</Table.Th>
+    <Table.Th>comment</Table.Th>
   </Table.Tr>
 );
 
@@ -296,6 +318,7 @@ const rows = (elements: CommentType[]) => {
       <Table.Td>{element.id}</Table.Td>
       <Table.Td>{element.authorId}</Table.Td>
       <Table.Td>{element.status}</Table.Td>
+      <Table.Td>{element.content}</Table.Td>
     </Table.Tr>
   ));
 };

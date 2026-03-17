@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { CreatedTaskType, TaskType } from '../models/task';
+import { CreatedTaskType, TaskType, UpdatedTaskType } from '../models/task';
 import { DBService } from '../db/db.service';
+import { query } from 'express';
 
 @Injectable()
 export class TasksService {
@@ -9,20 +10,47 @@ export class TasksService {
 
   private readonly logger = new Logger(TasksService.name);
 
-  async getAll() {
-    const tasks = await this.prisma.task.findMany();
+  async getAll(query: {
+    tagIds?: string[] | string;
+    status?: 'draft' | 'published';
+    authorIds?: string[] | string;
+    page?: string | number;
+    limit?: string | number;
+    q?: string;
+  }) {
+    const tagIdsArr = [query.tagIds].flat().filter(Boolean).map(Number);
+    const authorIdsArr = [query.authorIds].flat().filter(Boolean).map(Number);
+    const page = +(query.page || 1);
+    const limit = +(query.limit || 10);
+
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        status: query.status,
+        authorId: authorIdsArr.length > 0 ? { in: authorIdsArr } : undefined,
+        tags:
+          tagIdsArr.length > 0
+            ? { some: { id: { in: tagIdsArr } } }
+            : undefined,
+        deletedAt: null,
+      },
+      include: { tags: true, author: true },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
     this.logger.debug('get all tasks');
     return tasks;
   }
 
   async createTask(task: CreatedTaskType) {
+    const { tagIds, ...taskData } = task;
     const createdTask = await this.prisma.task.create({
       data: {
-        ...task,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        ...taskData,
+        authorId: +taskData.authorId,
+        tags: tagIds ? { connect: tagIds.map((id) => ({ id })) } : undefined,
         deletedAt: null,
       },
+      include: { tags: true, author: true },
     });
     this.logger.debug('add task', createdTask);
 
@@ -49,16 +77,24 @@ export class TasksService {
     return id;
   }
 
-  async updateTaskById(id: number, taskUpdated: TaskType) {
+  async updateTaskById(id: number, taskUpdated: UpdatedTaskType) {
     const taskExists = await this.prisma.task.findUnique({ where: { id } });
     if (!taskExists) return null;
+
+    const {
+      tagIds,
+      authorId,
+      ...dataToUpdated
+    } = taskUpdated;
 
     await this.prisma.task.update({
       where: { id },
       data: {
-        ...taskUpdated,
-        id: +taskUpdated.id!,
-        updatedAt: new Date().toISOString(),
+        ...dataToUpdated,
+        updatedAt: new Date(),
+        tags: tagIds
+          ? { set: tagIds.map((tid: number) => ({ id: +tid })) }
+          : undefined,
       },
     });
     this.logger.debug(`update task ${id}`);

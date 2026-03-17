@@ -6,11 +6,13 @@ import { Comments } from './components/Comments.tsx';
 import { Tags } from './components/Tags.tsx';
 import { Tasks } from './components/Tasks.tsx';
 import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
+import type { UserType } from 'backend/dist/src/models/user.ts';
 
 export const PORT = import.meta.env.VITE_PORT;
 
 function App() {
   const [msg, setMsg] = useState('');
+  const [currentUser, setCurrentUser] = useState<UserType | undefined>(undefined);
 
   console.log('msg', msg);
 
@@ -72,7 +74,7 @@ function App() {
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
-        <ActionsOnTasks />
+        <ActionsOnTasks user={currentUser || undefined} setUser={setCurrentUser || undefined} />
       </AppShell.Main>
     </AppShell>
   );

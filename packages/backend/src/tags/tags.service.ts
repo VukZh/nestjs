@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreatedTagType, TagType } from "../models/tag";
+import { CreatedTagType, TagType, UpdatedTagType } from '../models/tag';
 import { DBService } from '../db/db.service';
 
 @Injectable()
@@ -47,7 +47,7 @@ export class TagsService {
     return id;
   }
 
-  async updateTagById(id: number, tagUpdated: TagType) {
+  async updateTagById(id: number, tagUpdated: UpdatedTagType) {
     const tagExists = await this.prisma.tag.findUnique({ where: { id } });
     if (!tagExists) return null;
 
@@ -55,7 +55,6 @@ export class TagsService {
       where: { id },
       data: {
         ...tagUpdated,
-        id: +tagUpdated.id!,
         updatedAt: new Date().toISOString(),
       },
     });

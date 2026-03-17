@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CommentType, CreatedCommentType } from '../models/comment';
+import {
+  CommentType,
+  CreatedCommentType,
+  UpdatedCommentType,
+} from '../models/comment';
 import { DBService } from '../db/db.service';
 
 @Injectable()
@@ -14,12 +18,12 @@ export class CommentsService {
     return comments;
   }
 
-  async createComment(comment: CreatedCommentType) {
+  async createComment(data: CreatedCommentType) {
     const createdComment = await this.prisma.comment.create({
       data: {
-        ...comment,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        ...data,
+        authorId: +data.authorId,
+        taskId: +data.taskId,
         deletedAt: null,
       },
     });
@@ -29,7 +33,10 @@ export class CommentsService {
   }
 
   async getCommentById(id: number) {
-    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
+    const commentExists = await this.prisma.comment.findUnique({
+      where: { id },
+      include: { author: true, task: true },
+    });
     if (!commentExists) return null;
 
     this.logger.debug(`get comment ${id}`);
@@ -42,23 +49,26 @@ export class CommentsService {
 
     await this.prisma.comment.update({
       where: { id },
-      data: { deletedAt: new Date().toISOString() },
+      data: { deletedAt: new Date() },
     });
 
     this.logger.debug(`delete comment ${id}`);
     return id;
   }
 
-  async updateCommentById(id: number, updatedComment: CommentType) {
+  async updateCommentById(id: number, updatedComment: UpdatedCommentType ) {
     const commentExists = await this.prisma.comment.findUnique({ where: { id } });
     if (!commentExists) return null;
+
+    const { authorId, taskId, ...dataToUpdate } = updatedComment;
 
     await this.prisma.comment.update({
       where: { id },
       data: {
-        ...updatedComment,
-        id: +updatedComment.id!,
-        updatedAt: new Date().toISOString(),
+        ...dataToUpdate,
+        authorId: authorId ? +authorId : undefined,
+        taskId: taskId ? +taskId : undefined,
+        updatedAt: new Date(),
       },
     });
     this.logger.debug(`update comment ${id}`);
