@@ -43,7 +43,7 @@ function App() {
               Users
             </AccordionControl>
             <Accordion.Panel>
-              <Users />
+              <Users user={currentUser} />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tasks">
@@ -52,7 +52,7 @@ function App() {
               Tasks
             </AccordionControl>
             <Accordion.Panel>
-              <Tasks />
+              <Tasks user={currentUser} />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tags">
@@ -61,7 +61,7 @@ function App() {
               Tags
             </AccordionControl>
             <Accordion.Panel>
-              <Tags />
+              <Tags user={currentUser} />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="comments">
@@ -70,7 +70,7 @@ function App() {
               Comments
             </AccordionControl>
             <Accordion.Panel>
-              <Comments />
+              <Comments user={currentUser} />
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>

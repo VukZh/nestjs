@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedUserType, UpdatedUserType, UserType } from '../models/user';
 import { DBService } from '../db/db.service';
 
@@ -30,7 +30,10 @@ export class UsersService {
     this.logger.debug(`get user ${id}`);
     return userExists;
   }
-  async deleteUserById(id: number) {
+  async deleteUserById(id: number, userRole: string) {
+    if (userRole !== 'admin') {
+      throw new ForbiddenException('Only admin can delete users');
+    }
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 
@@ -42,7 +45,11 @@ export class UsersService {
     this.logger.debug(`delete user ${id}`);
     return id;
   }
-  async updateUserById(id: number, userUpdated: UpdatedUserType) {
+  async updateUserById(id: number, userUpdated: UpdatedUserType, userRole: string) {
+    if (userRole !== 'admin' && (userUpdated.role || userUpdated.status)) {
+        throw new ForbiddenException('Only admin can update role or status');
+    }
+
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 

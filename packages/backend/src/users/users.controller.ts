@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Headers,
 } from '@nestjs/common';
 import { UsersService } from "./users.service";
 import { CreatedUserType, UpdatedUserType, UserType } from '../models/user';
@@ -28,8 +29,12 @@ export class UsersController {
   }
 
   @Patch(':id')
-  updateUser(@Param('id') id: string, @Body() user: UpdatedUserType) {
-    const result = this.usersService.updateUserById(+id, user);
+  async updateUser(
+    @Param('id') id: string,
+    @Body() user: UpdatedUserType,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.usersService.updateUserById(+id, user, userRole);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User updated successfully',
@@ -38,8 +43,11 @@ export class UsersController {
   }
 
   @Delete(':id')
-  deleteUser(@Param('id') id: string) {
-    const result = this.usersService.deleteUserById(+id);
+  async deleteUser(
+    @Param('id') id: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.usersService.deleteUserById(+id, userRole);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User deleted successfully',
@@ -49,8 +57,6 @@ export class UsersController {
 
   @Get(':id')
   getUser(@Param('id') id: string) {
-    const result = this.usersService.getUserById(+id);
-    if (!result) throw new NotFoundException(`User ${id} not found`);
-    return result;
+    return this.usersService.getUserById(+id);
   }
 }

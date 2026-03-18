@@ -23,7 +23,12 @@ import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
 import { notifications } from '@mantine/notifications';
 
-export const Users = () => {
+type UsersProps = {
+  user?: UserType;
+};
+
+export const Users = (props: UsersProps) => {
+  const { user } = props;
   const [selectedUser, setSelectedUser] = useDebouncedState('', 500);
   const [users, setUsers] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -34,8 +39,8 @@ export const Users = () => {
     initialValues: {
       name: '',
       email: '',
-      role: '',
-      status: '',
+      role: 'user',
+      status: 'active',
     },
   });
   const formEdit = useForm({
@@ -47,6 +52,13 @@ export const Users = () => {
       status: '',
     },
   });
+
+  const getCommonHeaders = () => ({
+    'Content-Type': 'application/json',
+    'x-user-id': user?.id?.toString() || '',
+    'x-user-role': user?.role || '',
+  });
+
   const handleReload = async () => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/users`);
@@ -56,14 +68,10 @@ export const Users = () => {
           color: 'red',
           autoClose: 5000,
         });
+        return;
       }
       const data = await resp.json();
       setUsers(data);
-      notifications.show({
-        message: 'Users successfully loaded!',
-        color: 'green',
-        autoClose: 5000,
-      });
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -79,9 +87,7 @@ export const Users = () => {
       const { name, email, role, status } = values;
       const resp = await fetch(`http://localhost:${PORT}/users`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getCommonHeaders(),
         body: JSON.stringify({
           name,
           email,
@@ -90,19 +96,21 @@ export const Users = () => {
         }),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error adding user!',
+          message: 'Error adding user: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'User successfully added!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      close();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -110,27 +118,28 @@ export const Users = () => {
         autoClose: 5000,
       });
     }
-    close();
   };
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/users/${id}`, {
         method: 'DELETE',
+        headers: getCommonHeaders(),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error deleting user!',
+          message: 'Error deleting user: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'User successfully deleted!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -142,15 +151,14 @@ export const Users = () => {
 
   useEffect(() => {
     const getUser = async (id: string) => {
+      if (!id) return;
       const resp = await fetch(`http://localhost:${PORT}/users/${id}`);
-      const data = await resp.json();
-      formEdit.setValues(data);
+      if (resp.ok) {
+        const data = await resp.json();
+        formEdit.setValues(data);
+      }
     };
-    try {
-      getUser(selectedUser);
-    } catch (e) {
-      console.log(e);
-    }
+    getUser(selectedUser);
   }, [selectedUser]);
 
   const handleUpdate = async (
@@ -162,9 +170,7 @@ export const Users = () => {
         `http://localhost:${PORT}/users/${selectedUser}`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getCommonHeaders(),
           body: JSON.stringify({
             name,
             email,
@@ -174,19 +180,21 @@ export const Users = () => {
         },
       );
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error updating user!',
+          message: 'Error updating user: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'User successfully updated!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      closeEdit();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -194,7 +202,6 @@ export const Users = () => {
         autoClose: 5000,
       });
     }
-    closeEdit();
   };
 
   return (

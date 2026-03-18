@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Headers, Query } from '@nestjs/common';
 import { CommentsService } from "./comments.service";
 import {
   CommentType,
@@ -11,18 +11,27 @@ export class CommentsController {
   constructor(private readonly commentService: CommentsService) {}
 
   @Get()
-  getAll() {
-    return this.commentService.getAll();
+  getAll(@Query('all') all?: string) {
+    return this.commentService.getAll(all === 'true');
   }
 
   @Post()
-  createComment(@Body() comment: CreatedCommentType) {
-    return this.commentService.createComment(comment);
+  async createComment(
+    @Body() comment: CreatedCommentType,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    return await this.commentService.createComment(comment, { id: +userId, role: userRole });
   }
 
   @Patch(':id')
-  updateComment(@Param('id') id: string, @Body() comment: UpdatedCommentType) {
-    const result = this.commentService.updateCommentById(+id, comment);
+  async updateComment(
+    @Param('id') id: string,
+    @Body() comment: UpdatedCommentType,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.commentService.updateCommentById(+id, comment, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment updated successfully',
@@ -31,8 +40,12 @@ export class CommentsController {
   }
 
   @Delete(':id')
-  deleteComment(@Param('id') id: string) {
-    const result = this.commentService.deleteCommentById(+id);
+  async deleteComment(
+    @Param('id') id: string,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.commentService.deleteCommentById(+id, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment deleted successfully',
@@ -41,8 +54,8 @@ export class CommentsController {
   }
 
   @Get(':id')
-  getComment(@Param('id') id: string) {
-    const result = this.commentService.getCommentById(+id);
+  async getComment(@Param('id') id: string) {
+    const result = await this.commentService.getCommentById(+id);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return result;
   }

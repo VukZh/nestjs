@@ -1,8 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 
 import { CreatedTaskType, TaskType, UpdatedTaskType } from '../models/task';
 import { DBService } from '../db/db.service';
-import { query } from 'express';
 
 @Injectable()
 export class TasksService {
@@ -40,25 +39,40 @@ export class TasksService {
     return tasks;
   }
 
-  async createTask(task: CreatedTaskType) {
+  async createTask(
+    task: CreatedTaskType,
+    currentUser: { id: number; role: string },
+  ) {
+    if (currentUser.role !== 'admin' && currentUser.role !== 'author') {
+      throw new ForbiddenException('Only authors or admins can create tasks');
+    }
+
     const { tagIds, comment, ...taskData } = task;
+
+    const authorId =
+      currentUser.role === 'admin'
+        ? +taskData.authorId || currentUser.id
+        : currentUser.id;
+
     const createdTask = await this.prisma.task.create({
       data: {
         ...taskData,
-        authorId: +taskData.authorId,
-        tags: tagIds ? { connect: tagIds.map((id) => ({ id })) } : undefined,
+        authorId: authorId,
+        tags: tagIds
+          ? { connect: tagIds.map((id) => ({ id: +id })) }
+          : undefined,
         comments: comment
           ? {
               create: {
                 content: comment,
                 status: 'visible',
-                authorId: +taskData.authorId,
+                author: { connect: { id: authorId } },
               },
             }
           : undefined,
         deletedAt: null,
       },
-      include: { tags: true, author: true },
+      include: { tags: true, author: true, comments: true },
     });
     this.logger.debug('add task', createdTask);
 
@@ -66,16 +80,23 @@ export class TasksService {
   }
 
   async getTaskById(id: number) {
-    const taskExists = await this.prisma.task.findUnique({ where: { id } });
+    const taskExists = await this.prisma.task.findUnique({
+      where: { id },
+      include: { tags: true, author: true, comments: true },
+    });
     if (!taskExists) return null;
 
     this.logger.debug(`get task ${id}`);
     return taskExists;
   }
 
-  async deleteTaskById(id: number) {
-    const taskExists = await this.prisma.task.findUnique({ where: { id } });
-    if (!taskExists) return null;
+  async deleteTaskById(id: number, currentUser: { id: number; role: string }) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) return null;
+
+    if (currentUser.role !== 'admin' && task.authorId !== currentUser.id) {
+      throw new ForbiddenException('You can only delete your own tasks');
+    }
 
     await this.prisma.task.update({
       where: { id },
@@ -85,11 +106,19 @@ export class TasksService {
     return id;
   }
 
-  async updateTaskById(id: number, taskUpdated: UpdatedTaskType) {
-    const taskExists = await this.prisma.task.findUnique({ where: { id } });
-    if (!taskExists) return null;
+  async updateTaskById(
+    id: number,
+    taskUpdated: UpdatedTaskType,
+    currentUser: { id: number; role: string },
+  ) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    if (!task) return null;
 
-    const { tagIds, authorId, ...dataToUpdated } = taskUpdated;
+    if (currentUser.role !== 'admin' && task.authorId !== currentUser.id) {
+      throw new ForbiddenException('You can only update your own tasks');
+    }
+
+    const { tagIds, authorId, comment, ...dataToUpdated } = taskUpdated;
 
     await this.prisma.task.update({
       where: { id },
@@ -98,6 +127,15 @@ export class TasksService {
         updatedAt: new Date(),
         tags: tagIds
           ? { set: tagIds.map((tid: number) => ({ id: +tid })) }
+          : undefined,
+        comments: comment
+          ? {
+              create: {
+                content: comment,
+                status: 'visible',
+                author: { connect: { id: currentUser.id } },
+              },
+            }
           : undefined,
       },
     });

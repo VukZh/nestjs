@@ -22,8 +22,14 @@ import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
 import { notifications } from '@mantine/notifications';
+import { type UserType } from '../../../backend/src/models/user.ts';
 
-export const Tasks = () => {
+type TasksProps = {
+  user?: UserType;
+};
+
+export const Tasks = (props: TasksProps) => {
+  const { user } = props;
   const [selectedTask, setSelectedTask] = useDebouncedState('', 500);
   const [tasks, setTasks] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -34,8 +40,8 @@ export const Tasks = () => {
     initialValues: {
       title: '',
       content: '',
-      status: '',
-      authorId: 0,
+      status: 'draft',
+      authorId: user?.id || 0,
     },
   });
   const formEdit = useForm({
@@ -46,6 +52,13 @@ export const Tasks = () => {
       status: '',
     },
   });
+
+  const getCommonHeaders = () => ({
+    'Content-Type': 'application/json',
+    'x-user-id': user?.id?.toString() || '',
+    'x-user-role': user?.role || '',
+  });
+
   const handleReload = async () => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/tasks`);
@@ -55,14 +68,10 @@ export const Tasks = () => {
           color: 'red',
           autoClose: 5000,
         });
+        return;
       }
       const data = await resp.json();
       setTasks(data);
-      notifications.show({
-        message: 'Tasks successfully loaded!',
-        color: 'green',
-        autoClose: 5000,
-      });
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -78,9 +87,7 @@ export const Tasks = () => {
       const { title, content, status, authorId } = values;
       const resp = await fetch(`http://localhost:${PORT}/tasks`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getCommonHeaders(),
         body: JSON.stringify({
           title,
           content,
@@ -89,19 +96,21 @@ export const Tasks = () => {
         }),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error adding task!',
+          message: 'Error adding task: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Task successfully added!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      close();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -109,27 +118,28 @@ export const Tasks = () => {
         autoClose: 5000,
       });
     }
-    close();
   };
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`, {
         method: 'DELETE',
+        headers: getCommonHeaders(),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error deleting task!',
+          message: 'Error deleting task: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Task successfully deleted!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -141,15 +151,14 @@ export const Tasks = () => {
 
   useEffect(() => {
     const getTask = async (id: string) => {
+      if (!id) return;
       const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`);
-      const data = await resp.json();
-      formEdit.setValues(data);
+      if (resp.ok) {
+        const data = await resp.json();
+        formEdit.setValues(data);
+      }
     };
-    try {
-      getTask(selectedTask);
-    } catch (e) {
-      console.log(e);
-    }
+    getTask(selectedTask);
   }, [selectedTask]);
 
   const handleUpdate = async (
@@ -161,9 +170,7 @@ export const Tasks = () => {
         `http://localhost:${PORT}/tasks/${selectedTask}`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getCommonHeaders(),
           body: JSON.stringify({
             title,
             content,
@@ -172,19 +179,21 @@ export const Tasks = () => {
         },
       );
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error updating task!',
+          message: 'Error updating task: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Task successfully updated!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      closeEdit();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -192,7 +201,6 @@ export const Tasks = () => {
         autoClose: 5000,
       });
     }
-    closeEdit();
   };
 
   return (
@@ -209,7 +217,11 @@ export const Tasks = () => {
           {tasks.length ? rows(tasks) : <Text size="xs">No data</Text>}
         </Table.Tbody>
       </Table>
-      <ActionIcon variant="filled" color="lime" onClick={open}>
+      <ActionIcon
+        variant="filled"
+        color="lime"
+        onClick={open}
+      >
         <TbCategoryPlus style={{ width: '70%', height: '70%' }} />
       </ActionIcon>
 
@@ -225,7 +237,11 @@ export const Tasks = () => {
         >
           <TbCategoryMinus style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
-        <ActionIcon variant="filled" color="orange" onClick={openEdit}>
+        <ActionIcon
+          variant="filled"
+          color="orange"
+          onClick={openEdit}
+        >
           <TbCategory style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
       </Flex>

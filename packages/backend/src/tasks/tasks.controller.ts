@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  Headers,
 } from '@nestjs/common';
 import { TasksService } from "./tasks.service";
 import { CreatedTaskType, TaskType, UpdatedTaskType } from '../models/task';
@@ -34,13 +35,22 @@ export class TasksController {
   }
 
   @Post()
-  createTask(@Body() task: CreatedTaskType) {
-    return this.tasksService.createTask(task);
+  async createTask(
+    @Body() task: CreatedTaskType,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    return await this.tasksService.createTask(task, { id: +userId, role: userRole });
   }
 
   @Patch(':id')
-  updateTask(@Param('id') id: string, @Body() task: UpdatedTaskType) {
-    const result = this.tasksService.updateTaskById(+id, task);
+  async updateTask(
+    @Param('id') id: string,
+    @Body() task: UpdatedTaskType,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.tasksService.updateTaskById(+id, task, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task updated successfully',
@@ -49,8 +59,12 @@ export class TasksController {
   }
 
   @Delete(':id')
-  deleteTask(@Param('id') id: string) {
-    const result = this.tasksService.deleteTaskById(+id);
+  async deleteTask(
+    @Param('id') id: string,
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') userRole: string,
+  ) {
+    const result = await this.tasksService.deleteTaskById(+id, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task deleted successfully',
@@ -59,8 +73,8 @@ export class TasksController {
   }
 
   @Get(':id')
-  getTask(@Param('id') id: string) {
-    const result = this.tasksService.getTaskById(+id);
+  async getTask(@Param('id') id: string) {
+    const result = await this.tasksService.getTaskById(+id);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return result;
   }

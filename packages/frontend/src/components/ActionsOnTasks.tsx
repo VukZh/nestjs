@@ -28,7 +28,10 @@ import { type UserType } from '../../../backend/src/models/user.ts';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 
-type TaskExtendedType = TaskType & { comments: string[]; tags: string[] };
+type TaskExtendedType = TaskType & {
+  comments: { content: string }[];
+  tags: { id: number; name: string }[];
+};
 
 type ActionsOnTasksType = {
   user?: UserType;
@@ -38,10 +41,13 @@ type ActionsOnTasksType = {
 export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const { user, setUser } = props;
   const [tasks, setTasks] = useState<TaskExtendedType[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState('');
   const [openedFilter, { open: openFilter, close: closeFilter }] =
     useDisclosure(false);
 
   const [opened, { open: open, close: close }] = useDisclosure(false);
+  const [openedEdit, { open: openEdit, close: closeEdit }] =
+    useDisclosure(false);
 
   const [users, setUsers] = useState<UserType[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
@@ -53,6 +59,17 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       content: '',
       status: '',
       tags: [],
+      comment: '',
+    },
+  });
+
+  const formEdit = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      title: '',
+      content: '',
+      status: '',
+      tagIds: [] as string[],
       comment: '',
     },
   });
@@ -98,7 +115,9 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         params.append('authorIds', author);
       });
       filterState.status && params.append('status', filterState.status);
-      const response = await fetch(`http://localhost:3000/tasks?${params.toString()}`);
+      const response = await fetch(
+        `http://localhost:3000/tasks?${params.toString()}`,
+      );
       const data = await response.json();
       setTasks(data);
       notifications.show({
@@ -106,8 +125,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         color: 'green',
         autoClose: 5000,
       });
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error fetching tasks:', error);
       notifications.show({
         message: 'Something went wrong!' + error,
@@ -115,7 +133,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         autoClose: 5000,
       });
     }
-  }
+  };
 
   const reducer = (state: any, action: any) => {
     switch (action.type) {
@@ -174,6 +192,8 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-role': user?.role || '',
         },
         body: JSON.stringify(payload),
       });
@@ -186,10 +206,126 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           color: 'green',
           autoClose: 5000,
         });
+      } else {
+        const errorData = await resp.json();
+        throw new Error(errorData.message || 'Ошибка доступа');
       }
     } catch (e) {
       notifications.show({
-        message: 'Something went wrong!' + e,
+        message: 'Something went wrong! ' + (e as Error).message,
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const resp = await fetch(`http://localhost:3000/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-role': user?.role || '',
+        },
+      });
+      if (resp.ok) {
+        handleGetTasks();
+        notifications.show({
+          message: 'Task successfully deleted!',
+          color: 'green',
+          autoClose: 5000,
+        });
+      } else {
+        const errorData = await resp.json();
+        throw new Error(errorData.message || 'Ошибка доступа');
+      }
+    } catch (e) {
+      notifications.show({
+        message: 'Something went wrong! ' + (e as Error).message,
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  };
+
+  const handleOpenEdit = async () => {
+    if (!selectedTaskId) {
+      notifications.show({ message: 'Please input task ID', color: 'orange', autoClose: 5000 });
+      return;
+    }
+    try {
+      const resp = await fetch(`http://localhost:3000/tasks/${selectedTaskId}`);
+      if (resp.ok) {
+        const data = (await resp.json()) as TaskExtendedType;
+        formEdit.setValues({
+          title: data.title,
+          content: data.content,
+          status: data.status,
+          tagIds: data.tags?.map((t) => t.id.toString()) || [],
+          comment: '',
+        });
+        openEdit();
+      } else {
+        notifications.show({
+          message: 'Task not found',
+          color: 'red',
+          autoClose: 5000,
+        });
+      }
+    } catch (e) {
+      notifications.show({
+        message: 'Error fetching task',
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  };
+
+  const handleUpdate = async (values: {
+    title: string;
+    content: string;
+    status: string;
+    tagIds: string[];
+    comment: string;
+  }) => {
+    try {
+      const payload = {
+        title: values.title,
+        content: values.content,
+        status: values.status,
+        tagIds: values.tagIds.map(Number),
+        comment: values.comment,
+      };
+      const resp = await fetch(`http://localhost:3000/tasks/${selectedTaskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-role': user?.role || '',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (resp.ok) {
+        closeEdit();
+        handleGetTasks();
+        notifications.show({
+          message: 'Task successfully updated!',
+          color: 'green',
+          autoClose: 5000,
+        });
+      } else {
+        const errorData = await resp.json();
+        notifications.show({
+          message: 'Something went wrong! ' + errorData.message,
+          color: 'red',
+          autoClose: 5000,
+        })
+
+      }
+    } catch (e) {
+      notifications.show({
+        message: 'Something went wrong! ' + (e as Error).message,
         color: 'red',
         autoClose: 5000,
       });
@@ -214,17 +350,25 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         }}
       ></Select>
       <Divider my="xs" label="Add task" labelPosition="left" />
-      <ActionIcon variant="filled" color="lime" onClick={open} disabled={!user}>
+      <ActionIcon variant="filled" color="lime" onClick={open}>
         <TbCategoryPlus style={{ width: '70%', height: '70%' }} />
       </ActionIcon>
       <Divider my="xs" label="Edit/Delete task" labelPosition="left" />
       <Flex align="center" gap="xs">
-        <Input placeholder="Input task ID" />
-        <ActionIcon variant="filled" color="orange">
-          <TbCategory style={{ width: '70%', height: '70%' }} />
-        </ActionIcon>
-        <ActionIcon variant="filled" color="red">
+        <Input
+          placeholder="Input task ID"
+          value={selectedTaskId}
+          onChange={(e) => setSelectedTaskId(e.target.value)}
+        />
+        <ActionIcon
+          variant="filled"
+          color="red"
+          onClick={() => handleDelete(selectedTaskId)}
+        >
           <TbCategoryMinus style={{ width: '70%', height: '70%' }} />
+        </ActionIcon>
+        <ActionIcon variant="filled" color="orange" onClick={handleOpenEdit}>
+          <TbCategory style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
       </Flex>
       <Divider my="xs" label="Tasks table" labelPosition="left" />
@@ -361,6 +505,62 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           </Group>
         </form>
       </Modal>
+
+      <Modal opened={openedEdit} onClose={closeEdit} title="Edit Task" centered>
+        <form
+          onSubmit={formEdit.onSubmit((values) =>
+            handleUpdate(
+              values as {
+                title: string;
+                content: string;
+                status: string;
+                tagIds: string[];
+                comment: string;
+              },
+            ),
+          )}
+        >
+          <TextInput
+            withAsterisk
+            label="Title"
+            placeholder="title"
+            {...formEdit.getInputProps('title')}
+          />
+
+          <TextInput
+            withAsterisk
+            label="Content"
+            placeholder="content"
+            {...formEdit.getInputProps('content')}
+          />
+
+          <Select
+            withAsterisk
+            label="Status"
+            placeholder="Pick Status"
+            data={['draft', 'published']}
+            {...formEdit.getInputProps('status')}
+          />
+
+          <MultiSelect
+            clearable
+            data={tags.map((t) => ({ value: t.id!.toString(), label: t.name }))}
+            label="Tags"
+            placeholder="Select tags"
+            {...formEdit.getInputProps('tagIds')}
+          />
+
+          <TextInput
+            label="Add Comment (Optional)"
+            placeholder="Write a comment about this update"
+            {...formEdit.getInputProps('comment')}
+          />
+
+          <Group justify="flex-end" mt="md">
+            <Button type="submit">Update</Button>
+          </Group>
+        </form>
+      </Modal>
     </div>
   );
 };
@@ -377,9 +577,7 @@ const head = (
   </Table.Tr>
 );
 
-const rows = (
-  elements: (TaskType & { comments: string[]; tags: string[] })[],
-) => {
+const rows = (elements: TaskExtendedType[]) => {
   return elements.map((element) => (
     <Table.Tr key={element.id}>
       <Table.Td>{element.id}</Table.Td>

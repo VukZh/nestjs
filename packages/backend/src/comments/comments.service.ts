@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import {
   CommentType,
   CreatedCommentType,
@@ -12,20 +12,27 @@ export class CommentsService {
 
   constructor(private prisma: DBService) {}
 
-  async getAll() {
+  async getAll(showAll: boolean = false) {
     const comments = await this.prisma.comment.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        status: showAll ? undefined : 'visible',
+      },
     });
     this.logger.debug('get all comments');
     return comments;
   }
 
-  async createComment(data: CreatedCommentType) {
+  async createComment(
+    data: CreatedCommentType,
+    currentUser: { id: number; role: string },
+  ) {
     const createdComment = await this.prisma.comment.create({
       data: {
         ...data,
-        authorId: +data.authorId,
+        authorId: currentUser.id,
         taskId: +data.taskId,
+        status: 'visible',
         deletedAt: null,
       },
     });
@@ -45,9 +52,13 @@ export class CommentsService {
     return commentExists;
   }
 
-  async deleteCommentById(id: number) {
-    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
-    if (!commentExists) return null;
+  async deleteCommentById(id: number, currentUser: { id: number; role: string }) {
+    const comment = await this.prisma.comment.findUnique({ where: { id } });
+    if (!comment) return null;
+
+    if (currentUser.role !== 'admin' && comment.authorId !== currentUser.id) {
+      throw new ForbiddenException('You can only delete your own comments');
+    }
 
     await this.prisma.comment.update({
       where: { id },
@@ -58,18 +69,34 @@ export class CommentsService {
     return id;
   }
 
-  async updateCommentById(id: number, updatedComment: UpdatedCommentType ) {
-    const commentExists = await this.prisma.comment.findUnique({ where: { id } });
-    if (!commentExists) return null;
+  async updateCommentById(
+    id: number,
+    updatedComment: UpdatedCommentType,
+    currentUser: { id: number; role: string },
+  ) {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id },
+      include: { task: true },
+    });
+    if (!comment) return null;
 
-    const { authorId, taskId, ...dataToUpdate } = updatedComment;
+    const { authorId, taskId, status, content, ...dataToUpdate } =
+      updatedComment;
+
+   if (content && comment.authorId !== currentUser.id) {
+      throw new ForbiddenException('You can only edit your own comments');
+    }
+
+    if (status && currentUser.role !== 'admin' && comment.task.authorId !== currentUser.id) {
+        throw new ForbiddenException('Only admin or task author can change comment status');
+    }
 
     await this.prisma.comment.update({
       where: { id },
       data: {
         ...dataToUpdate,
-        authorId: authorId ? +authorId : undefined,
-        taskId: taskId ? +taskId : undefined,
+        content: content,
+        status: status,
         updatedAt: new Date(),
       },
     });

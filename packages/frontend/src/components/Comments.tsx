@@ -22,8 +22,14 @@ import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
 import { notifications } from '@mantine/notifications';
+import { type UserType } from '../../../backend/src/models/user.ts';
 
-export const Comments = () => {
+type CommentsProps = {
+  user?: UserType;
+};
+
+export const Comments = (props: CommentsProps) => {
+  const { user } = props;
   const [selectedComment, setSelectedComment] = useDebouncedState('', 500);
   const [comments, setComments] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -32,9 +38,9 @@ export const Comments = () => {
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      authorId: 0,
-      status: '',
+      status: 'visible',
       content: '',
+      taskId: '',
     },
   });
   const formEdit = useForm({
@@ -44,23 +50,30 @@ export const Comments = () => {
       content: '',
     },
   });
+
+  const getCommonHeaders = () => ({
+    'Content-Type': 'application/json',
+    'x-user-id': user?.id?.toString() || '',
+    'x-user-role': user?.role || '',
+  });
+
   const handleReload = async () => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/comments`);
+      const url =
+        user?.role === 'admin'
+          ? `http://localhost:${PORT}/comments?all=true`
+          : `http://localhost:${PORT}/comments`;
+      const resp = await fetch(url);
       if (!resp.ok) {
         notifications.show({
           message: 'Error loading comments!',
           color: 'red',
           autoClose: 5000,
         });
+        return;
       }
       const data = await resp.json();
       setComments(data);
-      notifications.show({
-        message: 'Comments successfully loaded!',
-        color: 'green',
-        autoClose: 5000,
-      });
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -69,36 +82,37 @@ export const Comments = () => {
       });
     }
   };
-  const handleAdd = async (
-    values: Pick<CommentType, 'status' | 'authorId' | 'content'>,
-  ) => {
+  const handleAdd = async (values: {
+    status: string;
+    content: string;
+    taskId: string;
+  }) => {
     try {
-      const { authorId, status, content } = values;
       const resp = await fetch(`http://localhost:${PORT}/comments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getCommonHeaders(),
         body: JSON.stringify({
-          authorId: +authorId,
-          status,
-          content,
+          status: values.status,
+          content: values.content,
+          taskId: +values.taskId,
         }),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error adding comment!',
+          message: 'Error adding comment: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Comment successfully added!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      close();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -106,27 +120,28 @@ export const Comments = () => {
         autoClose: 5000,
       });
     }
-    close();
   };
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/comments/${id}`, {
         method: 'DELETE',
+        headers: getCommonHeaders(),
       });
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error deleting comment!',
+          message: 'Error deleting comment: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Comment successfully deleted!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -138,15 +153,14 @@ export const Comments = () => {
 
   useEffect(() => {
     const getComment = async (id: string) => {
+      if (!id) return;
       const resp = await fetch(`http://localhost:${PORT}/comments/${id}`);
-      const data = await resp.json();
-      formEdit.setValues(data);
+      if (resp.ok) {
+        const data = await resp.json();
+        formEdit.setValues(data);
+      }
     };
-    try {
-      getComment(selectedComment);
-    } catch (e) {
-      console.log(e);
-    }
+    getComment(selectedComment);
   }, [selectedComment]);
 
   const handleUpdate = async (
@@ -158,9 +172,7 @@ export const Comments = () => {
         `http://localhost:${PORT}/comments/${selectedComment}`,
         {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getCommonHeaders(),
           body: JSON.stringify({
             status,
             content,
@@ -168,19 +180,21 @@ export const Comments = () => {
         },
       );
       if (!resp.ok) {
+        const err = await resp.json();
         notifications.show({
-          message: 'Error updating comment!',
+          message: 'Error updating comment: ' + (err.message || 'Access denied'),
           color: 'red',
           autoClose: 5000,
         });
         return;
       }
-      await resp.json();
       notifications.show({
         message: 'Comment successfully updated!',
         color: 'green',
         autoClose: 5000,
       });
+      handleReload();
+      closeEdit();
     } catch (e) {
       notifications.show({
         message: 'Something went wrong!' + e,
@@ -188,7 +202,6 @@ export const Comments = () => {
         autoClose: 5000,
       });
     }
-    closeEdit();
   };
 
   return (
@@ -221,24 +234,26 @@ export const Comments = () => {
         >
           <TbCategoryMinus style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
-        <ActionIcon variant="filled" color="orange" onClick={openEdit}>
+        <ActionIcon
+          variant="filled"
+          color="orange"
+          onClick={openEdit}
+        >
           <TbCategory style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
       </Flex>
       <Modal opened={opened} onClose={close} title="Add" centered>
         <form
           onSubmit={form.onSubmit((values) =>
-            handleAdd(
-              values as Pick<CommentType, 'status' | 'authorId' | 'content'>,
-            ),
+            handleAdd(values as { status: string; content: string; taskId: string }),
           )}
         >
           <TextInput
             withAsterisk
-            label="AuthorId"
-            placeholder="authorId"
-            key={form.key('authorId')}
-            {...form.getInputProps('authorId')}
+            label="Task ID"
+            placeholder="taskId"
+            key={form.key('taskId')}
+            {...form.getInputProps('taskId')}
           />
 
           <Select
@@ -265,12 +280,9 @@ export const Comments = () => {
       <Modal opened={openedEdit} onClose={closeEdit} title="Edit" centered>
         <form
           onSubmit={formEdit.onSubmit((values) =>
-            handleUpdate(
-              values as Pick<CommentType, 'status' | 'content'>,
-            ),
+            handleUpdate(values as Pick<CommentType, 'status' | 'content'>),
           )}
         >
-
           <Select
             label="Status"
             placeholder="Pick Status"
@@ -299,6 +311,7 @@ const head = (
   <Table.Tr>
     <Table.Th>id</Table.Th>
     <Table.Th>authorId</Table.Th>
+    <Table.Th>taskId</Table.Th>
     <Table.Th>status</Table.Th>
     <Table.Th>comment</Table.Th>
   </Table.Tr>
@@ -309,6 +322,7 @@ const rows = (elements: CommentType[]) => {
     <Table.Tr key={element.id}>
       <Table.Td>{element.id}</Table.Td>
       <Table.Td>{element.authorId}</Table.Td>
+      <Table.Td>{element.taskId}</Table.Td>
       <Table.Td>{element.status}</Table.Td>
       <Table.Td>{element.content}</Table.Td>
     </Table.Tr>
