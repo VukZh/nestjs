@@ -9,7 +9,9 @@ export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
   async getAll() {
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      where: { deletedAt: null },
+    });
     this.logger.debug('get all users');
     return users;
   }
@@ -34,14 +36,13 @@ export class UsersService {
 
     await this.prisma.user.update({
       where: { id },
-      data: { deletedAt: new Date().toISOString() },
+      data: { deletedAt: new Date() },
     });
 
     this.logger.debug(`delete user ${id}`);
     return id;
   }
   async updateUserById(id: number, userUpdated: UpdatedUserType) {
-    // const userExists = this.users.some((user) => user?.id === id);
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 

@@ -16,7 +16,6 @@ export class TasksService {
     authorIds?: string[] | string;
     page?: string | number;
     limit?: string | number;
-    q?: string;
   }) {
     const tagIdsArr = [query.tagIds].flat().filter(Boolean).map(Number);
     const authorIdsArr = [query.authorIds].flat().filter(Boolean).map(Number);
@@ -33,7 +32,7 @@ export class TasksService {
             : undefined,
         deletedAt: null,
       },
-      include: { tags: true, author: true },
+      include: { tags: true, author: true, comments: true },
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -42,12 +41,21 @@ export class TasksService {
   }
 
   async createTask(task: CreatedTaskType) {
-    const { tagIds, ...taskData } = task;
+    const { tagIds, comment, ...taskData } = task;
     const createdTask = await this.prisma.task.create({
       data: {
         ...taskData,
         authorId: +taskData.authorId,
         tags: tagIds ? { connect: tagIds.map((id) => ({ id })) } : undefined,
+        comments: comment
+          ? {
+              create: {
+                content: comment,
+                status: 'visible',
+                authorId: +taskData.authorId,
+              },
+            }
+          : undefined,
         deletedAt: null,
       },
       include: { tags: true, author: true },
@@ -71,7 +79,7 @@ export class TasksService {
 
     await this.prisma.task.update({
       where: { id },
-      data: { deletedAt: new Date().toISOString() },
+      data: { deletedAt: new Date() },
     });
     this.logger.debug(`delete task ${id}`);
     return id;
@@ -81,11 +89,7 @@ export class TasksService {
     const taskExists = await this.prisma.task.findUnique({ where: { id } });
     if (!taskExists) return null;
 
-    const {
-      tagIds,
-      authorId,
-      ...dataToUpdated
-    } = taskUpdated;
+    const { tagIds, authorId, ...dataToUpdated } = taskUpdated;
 
     await this.prisma.task.update({
       where: { id },

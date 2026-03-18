@@ -26,6 +26,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { type TagType } from '../../../backend/src/models/tag.ts';
 import { type UserType } from '../../../backend/src/models/user.ts';
 import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
 
 type TaskExtendedType = TaskType & { comments: string[]; tags: string[] };
 
@@ -45,17 +46,14 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const [users, setUsers] = useState<UserType[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
 
-
-
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
       title: '',
       content: '',
       status: '',
-      authorId: '',
       tags: [],
-      comments: [],
+      comment: '',
     },
   });
 
@@ -84,9 +82,40 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       await handleGetUsers();
       await handleGetTags();
     };
-    const interval = setInterval(getUsersAndTags, 2000);
+    const interval = setInterval(getUsersAndTags, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleGetTasks = async () => {
+    try {
+      const params = new URLSearchParams();
+      filterState.page && params.append('page', filterState.page.toString());
+      filterState.limit && params.append('limit', filterState.limit.toString());
+      filterState.tags.forEach((tag: string) => {
+        params.append('tagIds', tag);
+      });
+      filterState.authors.forEach((author: string) => {
+        params.append('authorIds', author);
+      });
+      filterState.status && params.append('status', filterState.status);
+      const response = await fetch(`http://localhost:3000/tasks?${params.toString()}`);
+      const data = await response.json();
+      setTasks(data);
+      notifications.show({
+        message: 'Tasks successfully loaded!',
+        color: 'green',
+        autoClose: 5000,
+      });
+    }
+    catch (error) {
+      console.error('Error fetching tasks:', error);
+      notifications.show({
+        message: 'Something went wrong!' + error,
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  }
 
   const reducer = (state: any, action: any) => {
     switch (action.type) {
@@ -119,12 +148,63 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
     limit: 10,
   });
 
+  useEffect(() => {
+    if (user) {
+      form.setFieldValue('authorId', user.id.toString());
+    }
+  }, [user, opened]);
+
+  const handleAdd = async (values: {
+    title: string;
+    content: string;
+    status: string;
+    tags: string[];
+    comment: string;
+  }) => {
+    try {
+      const payload = {
+        title: values.title,
+        content: values.content,
+        status: values.status,
+        tagIds: values.tags.map(Number),
+        comment: values.comment,
+        authorId: user?.id,
+      };
+      const resp = await fetch('http://localhost:3000/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (resp.ok) {
+        close();
+        form.reset();
+        handleGetTasks();
+        notifications.show({
+          message: 'Task successfully created!',
+          color: 'green',
+          autoClose: 5000,
+        });
+      }
+    } catch (e) {
+      notifications.show({
+        message: 'Something went wrong!' + e,
+        color: 'red',
+        autoClose: 5000,
+      });
+    }
+  };
+
   return (
     <div style={{ margin: '1rem' }}>
       <Divider my="xs" label="Select user" labelPosition="left" />
       <Select
         placeholder="Select user"
-        data={users.map((u) => ({ value: u.id!.toString(), label: u.name }))}
+        data={users.map((u) => ({
+          value: u.id!.toString(),
+          label: u.name + ' (' + u.role + ')',
+        }))}
         value={user?.id?.toString()}
         onChange={(value) => {
           const selectedUser = users.find((u) => u.id === Number(value));
@@ -152,7 +232,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         <ActionIcon variant="filled">
           <TbReload
             style={{ width: '70%', height: '70%' }}
-            onClick={() => console.log('Reload', filterState)}
+            onClick={handleGetTasks}
           />
         </ActionIcon>
 
@@ -193,7 +273,10 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         />
         <MultiSelect
           clearable
-          data={users.map((u) => ({ value: u.id!.toString(), label: u.name }))}
+          data={users.map((u) => ({
+            value: u.id!.toString(),
+            label: u.name + ' (' + u.role + ')',
+          }))}
           label="Authors"
           placeholder="Select authors"
           onChange={(value) =>
@@ -222,10 +305,13 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         <form
           onSubmit={form.onSubmit((values) =>
             handleAdd(
-              values as Pick<
-                TaskType,
-                'title' | 'content' | 'status' | 'authorId'
-              > & { tags: string[]; comments: string[] },
+              values as {
+                title: string;
+                content: string;
+                status: string;
+                tags: string[];
+                comment: string;
+              },
             ),
           )}
         >
@@ -245,14 +331,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
             {...form.getInputProps('content')}
           />
 
-          <TextInput
-            withAsterisk
-            label="AuthorId"
-            placeholder="authorId"
-            key={form.key('authorId')}
-            {...form.getInputProps('authorId')}
-          />
-
           <Select
             withAsterisk
             label="Status"
@@ -267,6 +345,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
             data={tags.map((t) => ({ value: t.id!.toString(), label: t.name }))}
             label="Tags"
             placeholder="Select tags"
+            {...form.getInputProps('tags')}
           />
 
           <TextInput
@@ -308,8 +387,10 @@ const rows = (
       <Table.Td>{element.content}</Table.Td>
       <Table.Td>{element.authorId}</Table.Td>
       <Table.Td>{element.status}</Table.Td>
-      <Table.Td>{element.comments}</Table.Td>
-      <Table.Td>{element.tags}</Table.Td>
+      <Table.Td>
+        {element.comments?.map((comment) => comment.content).join(', ')}
+      </Table.Td>
+      <Table.Td>{element.tags?.map((tag) => tag.name).join(', ')}</Table.Td>
     </Table.Tr>
   ));
 };

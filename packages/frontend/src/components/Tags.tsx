@@ -158,7 +158,6 @@ export const Tags = () => {
           },
           body: JSON.stringify({
             name,
-            id: selectedTag
           }),
         },
       );
@@ -228,10 +227,10 @@ export const Tags = () => {
         >
           <TextInput
             withAsterisk
-            label="Tag"
-            placeholder="tag"
-            key={form.key('tag')}
-            {...form.getInputProps('tag')}
+            label="Name"
+            placeholder="name"
+            key={form.key('name')}
+            {...form.getInputProps('name')}
           />
 
           <Group justify="flex-end" mt="md">
@@ -246,10 +245,10 @@ export const Tags = () => {
           )}
         >
           <TextInput
-            label="Tag"
-            placeholder="tag"
-            key={formEdit.key('tag')}
-            {...formEdit.getInputProps('tag')}
+            label="Name"
+            placeholder="name"
+            key={formEdit.key('name')}
+            {...formEdit.getInputProps('name')}
           />
 
           <Group justify="flex-end" mt="md">

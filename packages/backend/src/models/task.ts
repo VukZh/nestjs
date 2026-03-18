@@ -18,6 +18,6 @@ export type TaskType = {
   deletedAt: Date | string | null;
 };
 
-export type CreatedTaskType = Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'> & { tagIds?: number[] };
+export type CreatedTaskType = Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'> & { tagIds?: number[], comment?: string };
 
-export type UpdatedTaskType = Partial<Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'>> & { tagIds?: number[] };
+export type UpdatedTaskType = Partial<Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'>> & { tagIds?: number[], comment?: string };

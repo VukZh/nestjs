@@ -170,7 +170,6 @@ export const Users = () => {
             email,
             role,
             status,
-            id: selectedUser
           }),
         },
       );

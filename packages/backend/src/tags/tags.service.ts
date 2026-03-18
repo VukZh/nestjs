@@ -9,7 +9,9 @@ export class TagsService {
   constructor(private prisma: DBService) {}
 
   async getAll() {
-    const tags = await this.prisma.tag.findMany();
+    const tags = await this.prisma.tag.findMany({
+      where: { deletedAt: null },
+    });
     this.logger.debug('get all tags', tags);
     return tags;
   }
@@ -18,8 +20,8 @@ export class TagsService {
     const createdTag = await this.prisma.tag.create({
       data: {
         ...tag,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         deletedAt: null,
       },
     });
@@ -41,7 +43,7 @@ export class TagsService {
 
     await this.prisma.tag.update({
       where: { id },
-      data: { deletedAt: new Date().toISOString() },
+      data: { deletedAt: new Date() },
     });
     this.logger.debug(`delete tag ${id}`);
     return id;
@@ -55,7 +57,7 @@ export class TagsService {
       where: { id },
       data: {
         ...tagUpdated,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       },
     });
     this.logger.debug(`update tag ${id}`);

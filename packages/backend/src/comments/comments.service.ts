@@ -13,7 +13,9 @@ export class CommentsService {
   constructor(private prisma: DBService) {}
 
   async getAll() {
-    const comments = await this.prisma.comment.findMany();
+    const comments = await this.prisma.comment.findMany({
+      where: { deletedAt: null },
+    });
     this.logger.debug('get all comments');
     return comments;
   }

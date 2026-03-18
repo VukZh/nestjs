@@ -32,7 +32,7 @@ export const Comments = () => {
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      authorId: '',
+      authorId: 0,
       status: '',
       content: '',
     },
@@ -40,7 +40,6 @@ export const Comments = () => {
   const formEdit = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      authorId: '',
       status: '',
       content: '',
     },
@@ -81,7 +80,7 @@ export const Comments = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          authorId,
+          authorId: +authorId,
           status,
           content,
         }),
@@ -151,10 +150,10 @@ export const Comments = () => {
   }, [selectedComment]);
 
   const handleUpdate = async (
-    values: Pick<CommentType, 'status' | 'authorId'>,
+    values: Pick<CommentType, 'status' | 'content'>,
   ) => {
     try {
-      const { authorId, status } = values;
+      const { status, content } = values;
       const resp = await fetch(
         `http://localhost:${PORT}/comments/${selectedComment}`,
         {
@@ -163,9 +162,8 @@ export const Comments = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            authorId,
             status,
-            id: selectedComment,
+            content,
           }),
         },
       );
@@ -255,8 +253,8 @@ export const Comments = () => {
           <TextInput
             label="Comment"
             placeholder="comment"
-            key={form.key('comment')}
-            {...form.getInputProps('comment')}
+            key={form.key('content')}
+            {...form.getInputProps('content')}
           />
 
           <Group justify="flex-end" mt="md">
@@ -268,16 +266,10 @@ export const Comments = () => {
         <form
           onSubmit={formEdit.onSubmit((values) =>
             handleUpdate(
-              values as Pick<CommentType, 'status' | 'authorId' | 'content'>,
+              values as Pick<CommentType, 'status' | 'content'>,
             ),
           )}
         >
-          <TextInput
-            label="AuthorId"
-            placeholder="authorId"
-            key={formEdit.key('authorId')}
-            {...formEdit.getInputProps('authorId')}
-          />
 
           <Select
             label="Status"
@@ -290,8 +282,8 @@ export const Comments = () => {
           <TextInput
             label="Comment"
             placeholder="comment"
-            key={formEdit.key('comment')}
-            {...formEdit.getInputProps('comment')}
+            key={formEdit.key('content')}
+            {...formEdit.getInputProps('content')}
           />
 
           <Group justify="flex-end" mt="md">

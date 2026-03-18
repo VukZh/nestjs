@@ -35,7 +35,7 @@ export const Tasks = () => {
       title: '',
       content: '',
       status: '',
-      authorId: '',
+      authorId: 0,
     },
   });
   const formEdit = useForm({
@@ -44,7 +44,6 @@ export const Tasks = () => {
       title: '',
       content: '',
       status: '',
-      authorId: '',
     },
   });
   const handleReload = async () => {
@@ -86,7 +85,7 @@ export const Tasks = () => {
           title,
           content,
           status,
-          authorId,
+          authorId: +authorId,
         }),
       });
       if (!resp.ok) {
@@ -154,10 +153,10 @@ export const Tasks = () => {
   }, [selectedTask]);
 
   const handleUpdate = async (
-    values: Pick<TaskType, 'title' | 'content' | 'status' | 'authorId'>,
+    values: Pick<TaskType, 'title' | 'content' | 'status'>,
   ) => {
     try {
-      const { title, content, status, authorId } = values;
+      const { title, content, status } = values;
       const resp = await fetch(
         `http://localhost:${PORT}/tasks/${selectedTask}`,
         {
@@ -169,8 +168,6 @@ export const Tasks = () => {
             title,
             content,
             status,
-            authorId,
-            id: selectedTask,
           }),
         },
       );
@@ -287,7 +284,7 @@ export const Tasks = () => {
             handleUpdate(
               values as Pick<
                 TaskType,
-                'title' | 'content' | 'status' | 'authorId'
+                'title' | 'content' | 'status'
               >,
             ),
           )}
@@ -304,13 +301,6 @@ export const Tasks = () => {
             placeholder="content"
             key={formEdit.key('content')}
             {...formEdit.getInputProps('content')}
-          />
-
-          <TextInput
-            label="AuthorId"
-            placeholder="authorId"
-            key={formEdit.key('authorId')}
-            {...formEdit.getInputProps('authorId')}
           />
 
           <Select
