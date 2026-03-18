@@ -7,6 +7,7 @@ import { Tags } from './components/Tags.tsx';
 import { Tasks } from './components/Tasks.tsx';
 import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
 import type { UserType } from 'backend/dist/src/models/user.ts';
+import { showErrorNotification } from './utils/notifications.tsx';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -18,10 +19,17 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('http://localhost:3000');
-      const data = await response.json();
-      console.log(data);
-      setMsg(data.message);
+      try {
+        const response = await fetch('http://localhost:3000');
+        const data = await response.json();
+        if (response.ok) {
+          setMsg(data.message);
+        } else {
+          showErrorNotification('Server check failed', data);
+        }
+      } catch (e) {
+        showErrorNotification('Server check failed', e);
+      }
     };
     fetchData();
   }, []);

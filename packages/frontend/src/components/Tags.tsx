@@ -20,7 +20,7 @@ import { type TagType } from '../../../backend/src/models/tag.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { notifications } from '@mantine/notifications';
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 import { type UserType } from '../../../backend/src/models/user.ts';
 
 type TagsProps = {
@@ -57,21 +57,13 @@ export const Tags = (props: TagsProps) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/tags`);
       if (!resp.ok) {
-        notifications.show({
-          message: 'Error loading tags!',
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error loading tags', await resp.json());
         return;
       }
       const data = await resp.json();
       setTags(data);
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleAdd = async (values: Pick<TagType, 'name'>) => {
@@ -85,27 +77,14 @@ export const Tags = (props: TagsProps) => {
         }),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error adding tag: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error adding tag', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Tag successfully added!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Tag successfully added!');
       handleReload();
       close();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleDelete = async (id: string) => {
@@ -115,36 +94,29 @@ export const Tags = (props: TagsProps) => {
         headers: getCommonHeaders(),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error deleting tag: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error deleting tag', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Tag successfully deleted!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Tag successfully deleted!');
       handleReload();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
   useEffect(() => {
     const getTag = async (id: string) => {
       if (!id) return;
-      const resp = await fetch(`http://localhost:${PORT}/tags/${id}`);
-      if (resp.ok) {
+      try {
+        const resp = await fetch(`http://localhost:${PORT}/tags/${id}`);
+        if (!resp.ok) {
+          showErrorNotification('Error loading tag', await resp.json());
+          return;
+        }
         const data = await resp.json();
         formEdit.setValues(data);
+      } catch (e) {
+        showErrorNotification('Error', e);
       }
     };
     getTag(selectedTag);
@@ -161,27 +133,14 @@ export const Tags = (props: TagsProps) => {
         }),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error updating tag: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error updating tag', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Tag successfully updated!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Tag successfully updated!');
       handleReload();
       closeEdit();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 

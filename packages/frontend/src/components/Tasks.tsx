@@ -21,7 +21,7 @@ import { type TaskType } from '../../../backend/src/models/task.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { notifications } from '@mantine/notifications';
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 import { type UserType } from '../../../backend/src/models/user.ts';
 
 type TasksProps = {
@@ -63,21 +63,13 @@ export const Tasks = (props: TasksProps) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/tasks`);
       if (!resp.ok) {
-        notifications.show({
-          message: 'Error loading tasks!',
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error loading tasks', await resp.json());
         return;
       }
       const data = await resp.json();
       setTasks(data);
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleAdd = async (
@@ -96,27 +88,14 @@ export const Tasks = (props: TasksProps) => {
         }),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error adding task: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error adding task', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Task successfully added!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Task successfully added!');
       handleReload();
       close();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleDelete = async (id: string) => {
@@ -126,36 +105,29 @@ export const Tasks = (props: TasksProps) => {
         headers: getCommonHeaders(),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error deleting task: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error deleting task', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Task successfully deleted!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Task successfully deleted!');
       handleReload();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
   useEffect(() => {
     const getTask = async (id: string) => {
       if (!id) return;
-      const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`);
-      if (resp.ok) {
+      try {
+        const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`);
+        if (!resp.ok) {
+          showErrorNotification('Error loading task', await resp.json());
+          return;
+        }
         const data = await resp.json();
         formEdit.setValues(data);
+      } catch (e) {
+        showErrorNotification('Error', e);
       }
     };
     getTask(selectedTask);
@@ -179,27 +151,14 @@ export const Tasks = (props: TasksProps) => {
         },
       );
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error updating task: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error updating task', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Task successfully updated!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Task successfully updated!');
       handleReload();
       closeEdit();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 

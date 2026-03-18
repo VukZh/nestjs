@@ -21,7 +21,7 @@ import { type UserType } from '../../../backend/src/models/user.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { notifications } from '@mantine/notifications';
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 
 type UsersProps = {
   user?: UserType;
@@ -63,21 +63,13 @@ export const Users = (props: UsersProps) => {
     try {
       const resp = await fetch(`http://localhost:${PORT}/users`);
       if (!resp.ok) {
-        notifications.show({
-          message: 'Error loading users!',
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error loading users', await resp.json());
         return;
       }
       const data = await resp.json();
       setUsers(data);
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleAdd = async (
@@ -96,27 +88,14 @@ export const Users = (props: UsersProps) => {
         }),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error adding user: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error adding user', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'User successfully added!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('User successfully added!');
       handleReload();
       close();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleDelete = async (id: string) => {
@@ -126,36 +105,29 @@ export const Users = (props: UsersProps) => {
         headers: getCommonHeaders(),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error deleting user: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error deleting user', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'User successfully deleted!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('User successfully deleted!');
       handleReload();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
   useEffect(() => {
     const getUser = async (id: string) => {
       if (!id) return;
-      const resp = await fetch(`http://localhost:${PORT}/users/${id}`);
-      if (resp.ok) {
+      try {
+        const resp = await fetch(`http://localhost:${PORT}/users/${id}`);
+        if (!resp.ok) {
+          showErrorNotification('Error loading user', await resp.json());
+          return;
+        }
         const data = await resp.json();
         formEdit.setValues(data);
+      } catch (e) {
+        showErrorNotification('Error', e);
       }
     };
     getUser(selectedUser);
@@ -180,27 +152,14 @@ export const Users = (props: UsersProps) => {
         },
       );
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error updating user: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error updating user', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'User successfully updated!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('User successfully updated!');
       handleReload();
       closeEdit();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 

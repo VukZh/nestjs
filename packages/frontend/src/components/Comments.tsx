@@ -21,7 +21,7 @@ import { type CommentType } from '../../../backend/src/models/comment.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { notifications } from '@mantine/notifications';
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 import { type UserType } from '../../../backend/src/models/user.ts';
 
 type CommentsProps = {
@@ -65,21 +65,13 @@ export const Comments = (props: CommentsProps) => {
           : `http://localhost:${PORT}/comments`;
       const resp = await fetch(url);
       if (!resp.ok) {
-        notifications.show({
-          message: 'Error loading comments!',
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error loading comments', await resp.json());
         return;
       }
       const data = await resp.json();
       setComments(data);
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleAdd = async (values: {
@@ -98,27 +90,14 @@ export const Comments = (props: CommentsProps) => {
         }),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error adding comment: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error adding comment', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Comment successfully added!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Comment successfully added!');
       handleReload();
       close();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
   const handleDelete = async (id: string) => {
@@ -128,36 +107,29 @@ export const Comments = (props: CommentsProps) => {
         headers: getCommonHeaders(),
       });
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error deleting comment: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error deleting comment', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Comment successfully deleted!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Comment successfully deleted!');
       handleReload();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
   useEffect(() => {
     const getComment = async (id: string) => {
       if (!id) return;
-      const resp = await fetch(`http://localhost:${PORT}/comments/${id}`);
-      if (resp.ok) {
+      try {
+        const resp = await fetch(`http://localhost:${PORT}/comments/${id}`);
+        if (!resp.ok) {
+          showErrorNotification('Error loading comment', await resp.json());
+          return;
+        }
         const data = await resp.json();
         formEdit.setValues(data);
+      } catch (e) {
+        showErrorNotification('Error', e);
       }
     };
     getComment(selectedComment);
@@ -180,27 +152,14 @@ export const Comments = (props: CommentsProps) => {
         },
       );
       if (!resp.ok) {
-        const err = await resp.json();
-        notifications.show({
-          message: 'Error updating comment: ' + (err.message || 'Access denied'),
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Error updating comment', await resp.json());
         return;
       }
-      notifications.show({
-        message: 'Comment successfully updated!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Comment successfully updated!');
       handleReload();
       closeEdit();
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong!' + e,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 

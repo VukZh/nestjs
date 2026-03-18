@@ -26,7 +26,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { type TagType } from '../../../backend/src/models/tag.ts';
 import { type UserType } from '../../../backend/src/models/user.ts';
 import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
+import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 
 type TaskExtendedType = TaskType & {
   comments: { content: string }[];
@@ -77,20 +77,28 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const handleGetUsers = async () => {
     try {
       const response = await fetch('http://localhost:3000/users');
+      if (!response.ok) {
+        showErrorNotification('Error loading users', await response.json());
+        return;
+      }
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      showErrorNotification('Error fetching users', error);
     }
   };
 
   const handleGetTags = async () => {
     try {
       const response = await fetch('http://localhost:3000/tags');
+      if (!response.ok) {
+        showErrorNotification('Error loading tags', await response.json());
+        return;
+      }
       const data = await response.json();
       setTags(data);
     } catch (error) {
-      console.error('Error fetching tags:', error);
+      showErrorNotification('Error fetching tags', error);
     }
   };
 
@@ -118,20 +126,15 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       const response = await fetch(
         `http://localhost:3000/tasks?${params.toString()}`,
       );
+      if (!response.ok) {
+        showErrorNotification('Error loading tasks', await response.json());
+        return;
+      }
       const data = await response.json();
       setTasks(data);
-      notifications.show({
-        message: 'Tasks successfully loaded!',
-        color: 'green',
-        autoClose: 5000,
-      });
+      showSuccessNotification('Tasks successfully loaded!');
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      notifications.show({
-        message: 'Something went wrong!' + error,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error fetching tasks', error);
     }
   };
 
@@ -201,21 +204,12 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         close();
         form.reset();
         handleGetTasks();
-        notifications.show({
-          message: 'Task successfully created!',
-          color: 'green',
-          autoClose: 5000,
-        });
+        showSuccessNotification('Task successfully created!');
       } else {
-        const errorData = await resp.json();
-        throw new Error(errorData.message || 'Ошибка доступа');
+        showErrorNotification('Error adding task', await resp.json());
       }
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong! ' + (e as Error).message,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
@@ -231,27 +225,18 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       });
       if (resp.ok) {
         handleGetTasks();
-        notifications.show({
-          message: 'Task successfully deleted!',
-          color: 'green',
-          autoClose: 5000,
-        });
+        showSuccessNotification('Task successfully deleted!');
       } else {
-        const errorData = await resp.json();
-        throw new Error(errorData.message || 'Ошибка доступа');
+        showErrorNotification('Error deleting task', await resp.json());
       }
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong! ' + (e as Error).message,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error', e);
     }
   };
 
   const handleOpenEdit = async () => {
     if (!selectedTaskId) {
-      notifications.show({ message: 'Please input task ID', color: 'orange', autoClose: 5000 });
+      showErrorNotification('Input required', 'Please input task ID');
       return;
     }
     try {
@@ -267,18 +252,10 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         });
         openEdit();
       } else {
-        notifications.show({
-          message: 'Task not found',
-          color: 'red',
-          autoClose: 5000,
-        });
+        showErrorNotification('Task not found', await resp.json());
       }
     } catch (e) {
-      notifications.show({
-        message: 'Error fetching task',
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Error fetching task', e);
     }
   };
 
@@ -309,26 +286,12 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       if (resp.ok) {
         closeEdit();
         handleGetTasks();
-        notifications.show({
-          message: 'Task successfully updated!',
-          color: 'green',
-          autoClose: 5000,
-        });
+        showSuccessNotification('Task successfully updated!');
       } else {
-        const errorData = await resp.json();
-        notifications.show({
-          message: 'Something went wrong! ' + errorData.message,
-          color: 'red',
-          autoClose: 5000,
-        })
-
+        showErrorNotification('Something went wrong!', await resp.json());
       }
     } catch (e) {
-      notifications.show({
-        message: 'Something went wrong! ' + (e as Error).message,
-        color: 'red',
-        autoClose: 5000,
-      });
+      showErrorNotification('Something went wrong!', e);
     }
   };
 
