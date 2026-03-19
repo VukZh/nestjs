@@ -1,8 +1,13 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 
-import { CreatedTaskDto, TaskType, UpdatedTaskDto, GetTasksDto } from '../models/task';
+import {
+  CreatedTaskDto,
+  TaskType,
+  UpdatedTaskDto,
+  GetTasksDto,
+} from '../models/task';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from "../main";
+import { isLoggingEnabled } from '../main';
 
 @Injectable()
 export class TasksService {
@@ -16,7 +21,8 @@ export class TasksService {
     const tasks = await this.prisma.task.findMany({
       where: {
         status: status,
-        authorId: authorIds && authorIds.length > 0 ? { in: authorIds } : undefined,
+        authorId:
+          authorIds && authorIds.length > 0 ? { in: authorIds } : undefined,
         tags:
           tagIds && tagIds.length > 0
             ? { some: { id: { in: tagIds } } }

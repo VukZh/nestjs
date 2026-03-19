@@ -1,4 +1,11 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { CommentStatusType, CommentType } from './types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -6,7 +13,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export { CommentStatusType, CommentType };
 
 export class GetCommentsDto {
-  @ApiPropertyOptional({ description: 'Show all comments (including hidden ones)' })
+  @ApiPropertyOptional({
+    description: 'Show all comments (including hidden ones)',
+  })
   @IsOptional()
   @IsBoolean()
   @Transform(({ value }) => value === 'true')
@@ -14,7 +23,10 @@ export class GetCommentsDto {
 }
 
 export class CreatedCommentDto {
-  @ApiProperty({ enum: ['visible', 'hidden'], description: 'The visibility status of the comment' })
+  @ApiProperty({
+    enum: ['visible', 'hidden'],
+    description: 'The visibility status of the comment',
+  })
   @IsEnum(['visible', 'hidden'])
   status: CommentStatusType;
 
@@ -36,7 +48,10 @@ export class CreatedCommentDto {
 }
 
 export class UpdatedCommentDto {
-  @ApiPropertyOptional({ enum: ['visible', 'hidden'], description: 'The visibility status of the comment' })
+  @ApiPropertyOptional({
+    enum: ['visible', 'hidden'],
+    description: 'The visibility status of the comment',
+  })
   @IsEnum(['visible', 'hidden'])
   @IsOptional()
   status?: CommentStatusType;

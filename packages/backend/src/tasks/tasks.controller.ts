@@ -11,7 +11,7 @@ import {
   Headers,
   ParseIntPipe,
 } from '@nestjs/common';
-import { TasksService } from "./tasks.service";
+import { TasksService } from './tasks.service';
 import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
 import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
 
@@ -34,7 +34,10 @@ export class TasksController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    return await this.tasksService.createTask(task, { id: +userId, role: userRole });
+    return await this.tasksService.createTask(task, {
+      id: +userId,
+      role: userRole,
+    });
   }
 
   @ApiHeader({ name: 'x-user-id', required: true })
@@ -46,7 +49,10 @@ export class TasksController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tasksService.updateTaskById(id, task, { id: +userId, role: userRole });
+    const result = await this.tasksService.updateTaskById(id, task, {
+      id: +userId,
+      role: userRole,
+    });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task updated successfully',
@@ -62,7 +68,10 @@ export class TasksController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tasksService.deleteTaskById(id, { id: +userId, role: userRole });
+    const result = await this.tasksService.deleteTaskById(id, {
+      id: +userId,
+      role: userRole,
+    });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task deleted successfully',

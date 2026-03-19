@@ -10,16 +10,14 @@ import {
   Headers,
   ParseIntPipe,
 } from '@nestjs/common';
-import { UsersService } from "./users.service";
+import { UsersService } from './users.service';
 import { CreatedUserDto, UpdatedUserDto } from '../models/user';
 import { ApiTags, ApiHeader } from '@nestjs/swagger';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-
-  constructor(private readonly usersService: UsersService) {
-  }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   getAll() {
@@ -43,7 +41,7 @@ export class UsersController {
     return {
       message: 'User updated successfully',
       user: result,
-    }
+    };
   }
 
   @ApiHeader({ name: 'x-user-role', required: true })
@@ -57,7 +55,7 @@ export class UsersController {
     return {
       message: 'User deleted successfully',
       user: result,
-    }
+    };
   }
 
   @Get(':id')

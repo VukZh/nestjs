@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Headers, Query, ParseIntPipe } from '@nestjs/common';
-import { CommentsService } from "./comments.service";
-import { CreatedCommentDto, UpdatedCommentDto, GetCommentsDto } from '../models/comment';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Headers,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { CommentsService } from './comments.service';
+import {
+  CreatedCommentDto,
+  UpdatedCommentDto,
+  GetCommentsDto,
+} from '../models/comment';
 import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('comments')
@@ -21,7 +37,10 @@ export class CommentsController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    return await this.commentService.createComment(comment, { id: +userId, role: userRole });
+    return await this.commentService.createComment(comment, {
+      id: +userId,
+      role: userRole,
+    });
   }
 
   @ApiHeader({ name: 'x-user-id', required: true })
@@ -33,7 +52,10 @@ export class CommentsController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.commentService.updateCommentById(id, comment, { id: +userId, role: userRole });
+    const result = await this.commentService.updateCommentById(id, comment, {
+      id: +userId,
+      role: userRole,
+    });
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment updated successfully',
@@ -49,7 +71,10 @@ export class CommentsController {
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.commentService.deleteCommentById(id, { id: +userId, role: userRole });
+    const result = await this.commentService.deleteCommentById(id, {
+      id: +userId,
+      role: userRole,
+    });
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment deleted successfully',

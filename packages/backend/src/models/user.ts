@@ -1,4 +1,10 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { UserRoleType, UserStatusType, UserType } from './types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -14,11 +20,17 @@ export class CreatedUserDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ enum: ['user', 'admin', 'author'], description: 'The role of the user' })
+  @ApiProperty({
+    enum: ['user', 'admin', 'author'],
+    description: 'The role of the user',
+  })
   @IsEnum(['user', 'admin', 'author'])
   role: UserRoleType;
 
-  @ApiProperty({ enum: ['active', 'blocked'], description: 'The status of the user' })
+  @ApiProperty({
+    enum: ['active', 'blocked'],
+    description: 'The status of the user',
+  })
   @IsEnum(['active', 'blocked'])
   status: UserStatusType;
 }
@@ -34,12 +46,18 @@ export class UpdatedUserDto {
   @IsOptional()
   email?: string;
 
-  @ApiPropertyOptional({ enum: ['user', 'admin', 'author'], description: 'The role of the user' })
+  @ApiPropertyOptional({
+    enum: ['user', 'admin', 'author'],
+    description: 'The role of the user',
+  })
   @IsEnum(['user', 'admin', 'author'])
   @IsOptional()
   role?: UserRoleType;
 
-  @ApiPropertyOptional({ enum: ['active', 'blocked'], description: 'The status of the user' })
+  @ApiPropertyOptional({
+    enum: ['active', 'blocked'],
+    description: 'The status of the user',
+  })
   @IsEnum(['active', 'blocked'])
   @IsOptional()
   status?: UserStatusType;

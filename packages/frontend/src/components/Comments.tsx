@@ -17,11 +17,17 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { type CommentType, type UserType } from '../../../backend/src/models/types.ts';
+import {
+  type CommentType,
+  type UserType,
+} from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
+import {
+  showErrorNotification,
+  showSuccessNotification,
+} from '../utils/notifications.tsx';
 
 type CommentsProps = {
   user?: UserType;
@@ -192,18 +198,16 @@ export const Comments = (props: CommentsProps) => {
         >
           <TbCategoryMinus style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
-        <ActionIcon
-          variant="filled"
-          color="orange"
-          onClick={openEdit}
-        >
+        <ActionIcon variant="filled" color="orange" onClick={openEdit}>
           <TbCategory style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
       </Flex>
       <Modal opened={opened} onClose={close} title="Add" centered>
         <form
           onSubmit={form.onSubmit((values) =>
-            handleAdd(values as { status: string; content: string; taskId: string }),
+            handleAdd(
+              values as { status: string; content: string; taskId: string },
+            ),
           )}
         >
           <TextInput

@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedUserDto, UpdatedUserDto, UserType } from '../models/user';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from "../main";
+import { isLoggingEnabled } from '../main';
 
 @Injectable()
 export class UsersService {
@@ -46,9 +46,13 @@ export class UsersService {
     isLoggingEnabled && this.logger.debug(`delete user ${id}`);
     return id;
   }
-  async updateUserById(id: number, userUpdated: UpdatedUserDto, userRole: string) {
+  async updateUserById(
+    id: number,
+    userUpdated: UpdatedUserDto,
+    userRole: string,
+  ) {
     if (userRole !== 'admin' && (userUpdated.role || userUpdated.status)) {
-        throw new ForbiddenException('Only admin can update role or status');
+      throw new ForbiddenException('Only admin can update role or status');
     }
 
     const userExists = await this.prisma.user.findUnique({ where: { id } });

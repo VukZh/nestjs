@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedCommentDto, UpdatedCommentDto } from '../models/comment';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from "../main";
+import { isLoggingEnabled } from '../main';
 
 @Injectable()
 export class CommentsService {
@@ -49,7 +49,10 @@ export class CommentsService {
     return commentExists;
   }
 
-  async deleteCommentById(id: number, currentUser: { id: number; role: string }) {
+  async deleteCommentById(
+    id: number,
+    currentUser: { id: number; role: string },
+  ) {
     const comment = await this.prisma.comment.findUnique({ where: { id } });
     if (!comment) return null;
 
@@ -80,12 +83,18 @@ export class CommentsService {
     const { authorId, taskId, status, content, ...dataToUpdate } =
       updatedComment;
 
-   if (content && comment.authorId !== currentUser.id) {
+    if (content && comment.authorId !== currentUser.id) {
       throw new ForbiddenException('You can only edit your own comments');
     }
 
-    if (status && currentUser.role !== 'admin' && comment.task.authorId !== currentUser.id) {
-        throw new ForbiddenException('Only admin or task author can change comment status');
+    if (
+      status &&
+      currentUser.role !== 'admin' &&
+      comment.task.authorId !== currentUser.id
+    ) {
+      throw new ForbiddenException(
+        'Only admin or task author can change comment status',
+      );
     }
 
     await this.prisma.comment.update({

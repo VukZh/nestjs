@@ -20,11 +20,18 @@ import {
   TbReload,
   TbFilter,
 } from 'react-icons/tb';
-import { type TaskType, type TagType, type UserType } from '../../../backend/src/models/types.ts';
+import {
+  type TaskType,
+  type TagType,
+  type UserType,
+} from '../../../backend/src/models/types.ts';
 import { useEffect, useReducer, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
+import {
+  showErrorNotification,
+  showSuccessNotification,
+} from '../utils/notifications.tsx';
 import { PORT } from '../App.tsx';
 
 type TaskExtendedType = TaskType & {

@@ -1,4 +1,11 @@
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { TaskStatusType, TaskType } from './types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -20,7 +27,10 @@ export class GetTasksDto {
   @Type(() => Number)
   authorIds?: number[];
 
-  @ApiPropertyOptional({ enum: ['draft', 'published'], description: 'Filter by task status' })
+  @ApiPropertyOptional({
+    enum: ['draft', 'published'],
+    description: 'Filter by task status',
+  })
   @IsOptional()
   @IsEnum(['draft', 'published'])
   status?: TaskStatusType;
@@ -49,17 +59,25 @@ export class CreatedTaskDto {
   @IsNotEmpty()
   content: string;
 
-  @ApiProperty({ enum: ['draft', 'published'], description: 'The initial status of the task' })
+  @ApiProperty({
+    enum: ['draft', 'published'],
+    description: 'The initial status of the task',
+  })
   @IsEnum(['draft', 'published'])
   status: TaskStatusType;
 
-  @ApiPropertyOptional({ description: 'The author ID (admin only can set this)' })
+  @ApiPropertyOptional({
+    description: 'The author ID (admin only can set this)',
+  })
   @IsInt()
   @IsOptional()
   @Type(() => Number)
   authorId?: number;
 
-  @ApiPropertyOptional({ type: [Number], description: 'IDs of tags to connect' })
+  @ApiPropertyOptional({
+    type: [Number],
+    description: 'IDs of tags to connect',
+  })
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
@@ -83,7 +101,10 @@ export class UpdatedTaskDto {
   @IsOptional()
   content?: string;
 
-  @ApiPropertyOptional({ enum: ['draft', 'published'], description: 'The status of the task' })
+  @ApiPropertyOptional({
+    enum: ['draft', 'published'],
+    description: 'The status of the task',
+  })
   @IsEnum(['draft', 'published'])
   @IsOptional()
   status?: TaskStatusType;

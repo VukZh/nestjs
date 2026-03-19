@@ -30,9 +30,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         : exceptionResponse;
 
     const error =
-        typeof exceptionResponse === 'object' && 'error' in exceptionResponse
-            ? exceptionResponse.error
-            : 'Error';
+      typeof exceptionResponse === 'object' && 'error' in exceptionResponse
+        ? exceptionResponse.error
+        : 'Error';
 
     response.status(status).json({
       success: false,

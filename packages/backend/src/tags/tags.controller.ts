@@ -10,7 +10,7 @@ import {
   Headers,
   ParseIntPipe,
 } from '@nestjs/common';
-import { TagsService } from "./tags.service";
+import { TagsService } from './tags.service';
 import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 import { ApiTags, ApiHeader } from '@nestjs/swagger';
 

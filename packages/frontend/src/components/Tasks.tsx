@@ -17,11 +17,17 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { type TaskType, type UserType } from '../../../backend/src/models/types.ts';
+import {
+  type TaskType,
+  type UserType,
+} from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
-import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
+import {
+  showErrorNotification,
+  showSuccessNotification,
+} from '../utils/notifications.tsx';
 
 type TasksProps = {
   user?: UserType;
@@ -175,11 +181,7 @@ export const Tasks = (props: TasksProps) => {
           {tasks.length ? rows(tasks) : <Text size="xs">No data</Text>}
         </Table.Tbody>
       </Table>
-      <ActionIcon
-        variant="filled"
-        color="lime"
-        onClick={open}
-      >
+      <ActionIcon variant="filled" color="lime" onClick={open}>
         <TbCategoryPlus style={{ width: '70%', height: '70%' }} />
       </ActionIcon>
 
@@ -195,11 +197,7 @@ export const Tasks = (props: TasksProps) => {
         >
           <TbCategoryMinus style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
-        <ActionIcon
-          variant="filled"
-          color="orange"
-          onClick={openEdit}
-        >
+        <ActionIcon variant="filled" color="orange" onClick={openEdit}>
           <TbCategory style={{ width: '70%', height: '70%' }} />
         </ActionIcon>
       </Flex>
@@ -256,10 +254,7 @@ export const Tasks = (props: TasksProps) => {
         <form
           onSubmit={formEdit.onSubmit((values) =>
             handleUpdate(
-              values as Pick<
-                TaskType,
-                'title' | 'content' | 'status'
-              >,
+              values as Pick<TaskType, 'title' | 'content' | 'status'>,
             ),
           )}
         >

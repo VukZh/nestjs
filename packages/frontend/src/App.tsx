@@ -12,8 +12,9 @@ import { showErrorNotification } from './utils/notifications.tsx';
 export const PORT = import.meta.env.VITE_PORT;
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<UserType | undefined>(undefined);
-
+  const [currentUser, setCurrentUser] = useState<UserType | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,7 +79,10 @@ function App() {
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>
-        <ActionsOnTasks user={currentUser || undefined} setUser={setCurrentUser || undefined} />
+        <ActionsOnTasks
+          user={currentUser || undefined}
+          setUser={setCurrentUser || undefined}
+        />
       </AppShell.Main>
     </AppShell>
   );

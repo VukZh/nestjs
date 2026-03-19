@@ -9,7 +9,6 @@ const DB_URL = process.env.DATABASE_URL;
 
 @Injectable()
 export class DBService extends PrismaClient {
-
   constructor() {
     console.log('DB_URL: ', DB_URL);
     const adapter = new PrismaPg({
