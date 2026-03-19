@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Headers,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TagsService } from "./tags.service";
 import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
@@ -31,11 +32,11 @@ export class TagsController {
 
   @Patch(':id')
   async updateTag(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() tag: UpdatedTagDto,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tagsService.updateTagById(+id, tag, userRole);
+    const result = await this.tagsService.updateTagById(id, tag, userRole);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag updated successfully',
@@ -45,10 +46,10 @@ export class TagsController {
 
   @Delete(':id')
   async deleteTag(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tagsService.deleteTagById(+id, userRole);
+    const result = await this.tagsService.deleteTagById(id, userRole);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag deleted successfully',
@@ -57,8 +58,8 @@ export class TagsController {
   }
 
   @Get(':id')
-  async getTag(@Param('id') id: string) {
-    const result = await this.tagsService.getTagById(+id);
+  async getTag(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.tagsService.getTagById(id);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return result;
   }

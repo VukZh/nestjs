@@ -1,21 +1,15 @@
-import { UserType } from './user';
-import { TaskType } from './task';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { CommentStatusType, CommentType } from './types';
 
-export type CommentStatusType = 'visible' | 'hidden';
+export { CommentStatusType, CommentType };
 
-export type CommentType = {
-  id: number;
-  status: CommentStatusType;
-  content: string;
-  authorId: number;
-  author?: UserType;
-  taskId: number;
-  task?: TaskType;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  deletedAt: Date | string | null;
-};
+export class GetCommentsDto {
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true')
+  all?: boolean;
+}
 
 export class CreatedCommentDto {
   @IsEnum(['visible', 'hidden'])
@@ -26,9 +20,12 @@ export class CreatedCommentDto {
   content: string;
 
   @IsInt()
-  authorId: number;
+  @IsOptional()
+  @Type(() => Number)
+  authorId?: number;
 
   @IsInt()
+  @Type(() => Number)
   taskId: number;
 }
 
@@ -43,9 +40,11 @@ export class UpdatedCommentDto {
 
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   authorId?: number;
 
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   taskId?: number;
 }

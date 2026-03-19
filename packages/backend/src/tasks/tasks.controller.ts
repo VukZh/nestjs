@@ -9,29 +9,18 @@ import {
   Post,
   Query,
   Headers,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TasksService } from "./tasks.service";
-import { CreatedTaskDto, UpdatedTaskDto } from '../models/task';
+import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  getAll(
-    @Query('tagIds') tagIds?: string | string[],
-    @Query('authorIds') authorIds?: string | string[],
-    @Query('status') status?: 'draft' | 'published',
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.tasksService.getAll({
-      tagIds,
-      authorIds,
-      status,
-      page,
-      limit,
-    });
+  getAll(@Query() query: GetTasksDto) {
+    return this.tasksService.getAll(query);
   }
 
   @Post()
@@ -45,12 +34,12 @@ export class TasksController {
 
   @Patch(':id')
   async updateTask(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() task: UpdatedTaskDto,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tasksService.updateTaskById(+id, task, { id: +userId, role: userRole });
+    const result = await this.tasksService.updateTaskById(id, task, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task updated successfully',
@@ -60,11 +49,11 @@ export class TasksController {
 
   @Delete(':id')
   async deleteTask(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
-    const result = await this.tasksService.deleteTaskById(+id, { id: +userId, role: userRole });
+    const result = await this.tasksService.deleteTaskById(id, { id: +userId, role: userRole });
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task deleted successfully',
@@ -73,8 +62,8 @@ export class TasksController {
   }
 
   @Get(':id')
-  async getTask(@Param('id') id: string) {
-    const result = await this.tasksService.getTaskById(+id);
+  async getTask(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.tasksService.getTaskById(id);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return result;
   }

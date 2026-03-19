@@ -16,12 +16,11 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { type TagType } from '../../../backend/src/models/tag.ts';
+import { type TagType, type UserType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
-import { type UserType } from '../../../backend/src/models/user.ts';
 
 type TagsProps = {
   user?: UserType;

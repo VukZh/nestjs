@@ -12,19 +12,15 @@ import { showErrorNotification } from './utils/notifications.tsx';
 export const PORT = import.meta.env.VITE_PORT;
 
 function App() {
-  const [msg, setMsg] = useState('');
   const [currentUser, setCurrentUser] = useState<UserType | undefined>(undefined);
 
-  console.log('msg', msg);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`http://localhost:${PORT}`);
         const data = await response.json();
-        if (response.ok) {
-          setMsg(data.message);
-        } else {
+        if (!response.ok) {
           showErrorNotification('Server check failed', data);
         }
       } catch (e) {

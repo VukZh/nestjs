@@ -17,12 +17,11 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { type CommentType } from '../../../backend/src/models/comment.ts';
+import { type CommentType, type UserType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
-import { type UserType } from '../../../backend/src/models/user.ts';
 
 type CommentsProps = {
   user?: UserType;

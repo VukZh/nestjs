@@ -20,11 +20,9 @@ import {
   TbReload,
   TbFilter,
 } from 'react-icons/tb';
-import { type TaskType } from '../../../backend/src/models/task.ts';
+import { type TaskType, type TagType, type UserType } from '../../../backend/src/models/types.ts';
 import { useEffect, useReducer, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
-import { type TagType } from '../../../backend/src/models/tag.ts';
-import { type UserType } from '../../../backend/src/models/user.ts';
 import { useForm } from '@mantine/form';
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
 import { PORT } from '../App.tsx';
@@ -108,7 +106,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       await handleGetUsers();
       await handleGetTags();
     };
-    const interval = setInterval(getUsersAndTags, 30000);
+    const interval = setInterval(getUsersAndTags, 5000);
     return () => clearInterval(interval);
   }, []);
 

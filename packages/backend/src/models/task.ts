@@ -1,23 +1,36 @@
-import { UserType } from './user';
-import { TagType } from './tag';
-import { CommentType } from './comment';
 import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { TaskStatusType, TaskType } from './types';
 
-export type TaskStatusType = 'draft' | 'published';
+export { TaskStatusType, TaskType };
 
-export type TaskType = {
-  id: number;
-  title: string;
-  content: string;
-  status: TaskStatusType;
-  authorId: number;
-  author?: UserType;
-  tags?: TagType[];
-  comments?: CommentType[];
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  deletedAt: Date | string | null;
-};
+export class GetTasksDto {
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  tagIds?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Type(() => Number)
+  authorIds?: number[];
+
+  @IsOptional()
+  @IsEnum(['draft', 'published'])
+  status?: TaskStatusType;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  page?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  limit?: number;
+}
 
 export class CreatedTaskDto {
   @IsString()
@@ -32,11 +45,14 @@ export class CreatedTaskDto {
   status: TaskStatusType;
 
   @IsInt()
-  authorId: number;
+  @IsOptional()
+  @Type(() => Number)
+  authorId?: number;
 
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
+  @Type(() => Number)
   tagIds?: number[];
 
   @IsString()
@@ -59,11 +75,13 @@ export class UpdatedTaskDto {
 
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   authorId?: number;
 
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
+  @Type(() => Number)
   tagIds?: number[];
 
   @IsString()

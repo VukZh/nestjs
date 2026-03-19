@@ -1,14 +1,7 @@
-import { TaskType } from './task';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { TagType } from './types';
 
-export type TagType = {
-  id: number;
-  name: string;
-  tasks?: TaskType[];
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  deletedAt: Date | string | null;
-};
+export { TagType };
 
 export class CreatedTagDto {
   @IsString()

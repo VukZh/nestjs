@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 
-import { CreatedTaskDto, TaskType, UpdatedTaskDto } from '../models/task';
+import { CreatedTaskDto, TaskType, UpdatedTaskDto, GetTasksDto } from '../models/task';
 import { DBService } from '../db/db.service';
 import { isLoggingEnabled } from "../main";
 
@@ -10,25 +10,16 @@ export class TasksService {
 
   private readonly logger = new Logger(TasksService.name);
 
-  async getAll(query: {
-    tagIds?: string[] | string;
-    status?: 'draft' | 'published';
-    authorIds?: string[] | string;
-    page?: string | number;
-    limit?: string | number;
-  }) {
-    const tagIdsArr = [query.tagIds].flat().filter(Boolean).map(Number);
-    const authorIdsArr = [query.authorIds].flat().filter(Boolean).map(Number);
-    const page = +(query.page || 1);
-    const limit = +(query.limit || 10);
+  async getAll(query: GetTasksDto) {
+    const { tagIds, authorIds, status, page = 1, limit = 10 } = query;
 
     const tasks = await this.prisma.task.findMany({
       where: {
-        status: query.status,
-        authorId: authorIdsArr.length > 0 ? { in: authorIdsArr } : undefined,
+        status: status,
+        authorId: authorIds && authorIds.length > 0 ? { in: authorIds } : undefined,
         tags:
-          tagIdsArr.length > 0
-            ? { some: { id: { in: tagIdsArr } } }
+          tagIds && tagIds.length > 0
+            ? { some: { id: { in: tagIds } } }
             : undefined,
         deletedAt: null,
       },
@@ -52,7 +43,7 @@ export class TasksService {
 
     const authorId =
       currentUser.role === 'admin'
-        ? +taskData.authorId || currentUser.id
+        ? taskData.authorId || currentUser.id
         : currentUser.id;
 
     const createdTask = await this.prisma.task.create({
@@ -60,7 +51,7 @@ export class TasksService {
         ...taskData,
         authorId: authorId,
         tags: tagIds
-          ? { connect: tagIds.map((id) => ({ id: +id })) }
+          ? { connect: tagIds.map((id) => ({ id: id })) }
           : undefined,
         comments: comment
           ? {
@@ -127,7 +118,7 @@ export class TasksService {
         ...dataToUpdated,
         updatedAt: new Date(),
         tags: tagIds
-          ? { set: tagIds.map((tid: number) => ({ id: +tid })) }
+          ? { set: tagIds.map((tid: number) => ({ id: tid })) }
           : undefined,
         comments: comment
           ? {

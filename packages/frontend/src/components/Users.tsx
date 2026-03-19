@@ -17,7 +17,7 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { type UserType } from '../../../backend/src/models/user.ts';
+import { type UserType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
