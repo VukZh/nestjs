@@ -1,4 +1,5 @@
 import { TaskType } from './task';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export type TagType = {
   id: number;
@@ -9,7 +10,14 @@ export type TagType = {
   deletedAt: Date | string | null;
 };
 
-export type CreatedTagType = Omit<TagType, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'tasks'>
+export class CreatedTagDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
 
-export type UpdatedTagType = Partial<CreatedTagType>;
-
+export class UpdatedTagDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+}

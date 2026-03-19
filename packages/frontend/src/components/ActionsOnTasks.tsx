@@ -27,6 +27,7 @@ import { type TagType } from '../../../backend/src/models/tag.ts';
 import { type UserType } from '../../../backend/src/models/user.ts';
 import { useForm } from '@mantine/form';
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications.tsx';
+import { PORT } from '../App.tsx';
 
 type TaskExtendedType = TaskType & {
   comments: { content: string }[];
@@ -76,7 +77,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   const handleGetUsers = async () => {
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch(`http://localhost:${PORT}/users`);
       if (!response.ok) {
         showErrorNotification('Error loading users', await response.json());
         return;
@@ -90,7 +91,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   const handleGetTags = async () => {
     try {
-      const response = await fetch('http://localhost:3000/tags');
+      const response = await fetch(`http://localhost:${PORT}/tags`);
       if (!response.ok) {
         showErrorNotification('Error loading tags', await response.json());
         return;
@@ -124,7 +125,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       });
       filterState.status && params.append('status', filterState.status);
       const response = await fetch(
-        `http://localhost:3000/tasks?${params.toString()}`,
+        `http://localhost:${PORT}/tasks?${params.toString()}`,
       );
       if (!response.ok) {
         showErrorNotification('Error loading tasks', await response.json());
@@ -191,7 +192,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         comment: values.comment,
         authorId: user?.id,
       };
-      const resp = await fetch('http://localhost:3000/tasks', {
+      const resp = await fetch(`http://localhost:${PORT}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await fetch(`http://localhost:3000/tasks/${id}`, {
+      const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +241,9 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       return;
     }
     try {
-      const resp = await fetch(`http://localhost:3000/tasks/${selectedTaskId}`);
+      const resp = await fetch(
+        `http://localhost:${PORT}/tasks/${selectedTaskId}`,
+      );
       if (resp.ok) {
         const data = (await resp.json()) as TaskExtendedType;
         formEdit.setValues({
@@ -274,15 +277,18 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         tagIds: values.tagIds.map(Number),
         comment: values.comment,
       };
-      const resp = await fetch(`http://localhost:3000/tasks/${selectedTaskId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-role': user?.role || '',
+      const resp = await fetch(
+        `http://localhost:${PORT}/tasks/${selectedTaskId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user?.id?.toString() || '',
+            'x-user-role': user?.role || '',
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
       if (resp.ok) {
         closeEdit();
         handleGetTasks();

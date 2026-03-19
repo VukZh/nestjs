@@ -10,7 +10,7 @@ import {
   Headers,
 } from '@nestjs/common';
 import { TagsService } from "./tags.service";
-import { CreatedTagType, TagType, UpdatedTagType } from '../models/tag';
+import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 
 @Controller('tags')
 export class TagsController {
@@ -23,7 +23,7 @@ export class TagsController {
 
   @Post()
   async createTag(
-    @Body() tag: CreatedTagType,
+    @Body() tag: CreatedTagDto,
     @Headers('x-user-role') userRole: string,
   ) {
     return await this.tagsService.createTag(tag, userRole);
@@ -32,7 +32,7 @@ export class TagsController {
   @Patch(':id')
   async updateTag(
     @Param('id') id: string,
-    @Body() tag: UpdatedTagType,
+    @Body() tag: UpdatedTagDto,
     @Headers('x-user-role') userRole: string,
   ) {
     const result = await this.tagsService.updateTagById(+id, tag, userRole);

@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { CreatedUserType, UpdatedUserType, UserType } from '../models/user';
+import { CreatedUserDto, UpdatedUserDto, UserType } from '../models/user';
 import { DBService } from '../db/db.service';
+import { isLoggingEnabled } from "../main";
 
 @Injectable()
 export class UsersService {
@@ -12,14 +13,14 @@ export class UsersService {
     const users = await this.prisma.user.findMany({
       where: { deletedAt: null },
     });
-    this.logger.debug('get all users');
+    isLoggingEnabled && this.logger.debug('get all users');
     return users;
   }
-  async createUser(user: CreatedUserType) {
+  async createUser(user: CreatedUserDto) {
     const createdUser = await this.prisma.user.create({
       data: { ...user, deletedAt: null },
     });
-    this.logger.debug('add user', user);
+    isLoggingEnabled && this.logger.debug('add user', user);
 
     return createdUser;
   }
@@ -27,7 +28,7 @@ export class UsersService {
     const userExists = await this.prisma.user.findUnique({ where: { id } });
     if (!userExists) return null;
 
-    this.logger.debug(`get user ${id}`);
+    isLoggingEnabled && this.logger.debug(`get user ${id}`);
     return userExists;
   }
   async deleteUserById(id: number, userRole: string) {
@@ -42,10 +43,10 @@ export class UsersService {
       data: { deletedAt: new Date() },
     });
 
-    this.logger.debug(`delete user ${id}`);
+    isLoggingEnabled && this.logger.debug(`delete user ${id}`);
     return id;
   }
-  async updateUserById(id: number, userUpdated: UpdatedUserType, userRole: string) {
+  async updateUserById(id: number, userUpdated: UpdatedUserDto, userRole: string) {
     if (userRole !== 'admin' && (userUpdated.role || userUpdated.status)) {
         throw new ForbiddenException('Only admin can update role or status');
     }
@@ -62,7 +63,7 @@ export class UsersService {
         updatedAt: new Date(),
       },
     });
-    this.logger.debug(`update user ${id}`);
+    isLoggingEnabled && this.logger.debug(`update user ${id}`);
     return id;
   }
 }

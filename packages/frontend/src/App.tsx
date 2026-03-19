@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3000');
+        const response = await fetch(`http://localhost:${PORT}`);
         const data = await response.json();
         if (response.ok) {
           setMsg(data.message);

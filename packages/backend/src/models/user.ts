@@ -1,8 +1,9 @@
 import { TaskType } from './task';
 import { CommentType } from './comment';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-type UserRoleType = 'user'|'admin'|'author'
-type UserStatusType = 'active'|'blocked'
+export type UserRoleType = 'user' | 'admin' | 'author';
+export type UserStatusType = 'active' | 'blocked';
 
 export type UserType = {
   id: number;
@@ -17,6 +18,35 @@ export type UserType = {
   deletedAt: Date | string | null;
 };
 
-export type CreatedUserType = Omit<UserType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'tasks' | 'comments'>
+export class CreatedUserDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-export type UpdatedUserType = Partial<CreatedUserType>;
+  @IsEmail()
+  email: string;
+
+  @IsEnum(['user', 'admin', 'author'])
+  role: UserRoleType;
+
+  @IsEnum(['active', 'blocked'])
+  status: UserStatusType;
+}
+
+export class UpdatedUserDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsEnum(['user', 'admin', 'author'])
+  @IsOptional()
+  role?: UserRoleType;
+
+  @IsEnum(['active', 'blocked'])
+  @IsOptional()
+  status?: UserStatusType;
+}

@@ -1,10 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import {
-  CommentType,
-  CreatedCommentType,
-  UpdatedCommentType,
-} from '../models/comment';
+import { CreatedCommentDto, UpdatedCommentDto } from '../models/comment';
 import { DBService } from '../db/db.service';
+import { isLoggingEnabled } from "../main";
 
 @Injectable()
 export class CommentsService {
@@ -19,12 +16,12 @@ export class CommentsService {
         status: showAll ? undefined : 'visible',
       },
     });
-    this.logger.debug('get all comments');
+    isLoggingEnabled && this.logger.debug('get all comments');
     return comments;
   }
 
   async createComment(
-    data: CreatedCommentType,
+    data: CreatedCommentDto,
     currentUser: { id: number; role: string },
   ) {
     const createdComment = await this.prisma.comment.create({
@@ -36,7 +33,7 @@ export class CommentsService {
         deletedAt: null,
       },
     });
-    this.logger.debug('add comment', createdComment);
+    isLoggingEnabled && this.logger.debug('add comment', createdComment);
 
     return createdComment;
   }
@@ -48,7 +45,7 @@ export class CommentsService {
     });
     if (!commentExists) return null;
 
-    this.logger.debug(`get comment ${id}`);
+    isLoggingEnabled && this.logger.debug(`get comment ${id}`);
     return commentExists;
   }
 
@@ -65,13 +62,13 @@ export class CommentsService {
       data: { deletedAt: new Date() },
     });
 
-    this.logger.debug(`delete comment ${id}`);
+    isLoggingEnabled && this.logger.debug(`delete comment ${id}`);
     return id;
   }
 
   async updateCommentById(
     id: number,
-    updatedComment: UpdatedCommentType,
+    updatedComment: UpdatedCommentDto,
     currentUser: { id: number; role: string },
   ) {
     const comment = await this.prisma.comment.findUnique({
@@ -100,7 +97,7 @@ export class CommentsService {
         updatedAt: new Date(),
       },
     });
-    this.logger.debug(`update comment ${id}`);
+    isLoggingEnabled && this.logger.debug(`update comment ${id}`);
     return id;
   }
 }

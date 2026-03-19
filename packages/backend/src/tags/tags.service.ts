@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { CreatedTagType, TagType, UpdatedTagType } from '../models/tag';
+import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 import { DBService } from '../db/db.service';
+import { isLoggingEnabled } from "../main";
 
 @Injectable()
 export class TagsService {
@@ -12,17 +13,17 @@ export class TagsService {
     const tags = await this.prisma.tag.findMany({
       where: { deletedAt: null },
     });
-    this.logger.debug('get all tags');
+    isLoggingEnabled && this.logger.debug('get all tags');
     return tags;
   }
-  async createTag(tag: CreatedTagType, userRole: string) {
+  async createTag(tag: CreatedTagDto, userRole: string) {
     if (userRole !== 'admin') {
       throw new ForbiddenException('Only admin can create tags');
     }
     const createdTag = await this.prisma.tag.create({
       data: { ...tag, deletedAt: null },
     });
-    this.logger.debug('add tag', tag);
+    isLoggingEnabled && this.logger.debug('add tag', tag);
 
     return createdTag;
   }
@@ -30,7 +31,7 @@ export class TagsService {
     const tagExists = await this.prisma.tag.findUnique({ where: { id } });
     if (!tagExists) return null;
 
-    this.logger.debug(`get tag ${id}`);
+    isLoggingEnabled && this.logger.debug(`get tag ${id}`);
     return tagExists;
   }
   async deleteTagById(id: number, userRole: string) {
@@ -45,10 +46,10 @@ export class TagsService {
       data: { deletedAt: new Date() },
     });
 
-    this.logger.debug(`delete tag ${id}`);
+    isLoggingEnabled && this.logger.debug(`delete tag ${id}`);
     return id;
   }
-  async updateTagById(id: number, tagUpdated: UpdatedTagType, userRole: string) {
+  async updateTagById(id: number, tagUpdated: UpdatedTagDto, userRole: string) {
     if (userRole !== 'admin') {
       throw new ForbiddenException('Only admin can update tags');
     }
@@ -64,7 +65,7 @@ export class TagsService {
         updatedAt: new Date(),
       },
     });
-    this.logger.debug(`update tag ${id}`);
+    isLoggingEnabled && this.logger.debug(`update tag ${id}`);
     return id;
   }
 }

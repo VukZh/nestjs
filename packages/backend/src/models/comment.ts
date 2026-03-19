@@ -1,7 +1,8 @@
 import { UserType } from './user';
 import { TaskType } from './task';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-type CommentStatusType = 'visible' | 'hidden';
+export type CommentStatusType = 'visible' | 'hidden';
 
 export type CommentType = {
   id: number;
@@ -16,14 +17,35 @@ export type CommentType = {
   deletedAt: Date | string | null;
 };
 
-export type CreatedCommentType = Omit<
-  CommentType,
-  | 'id'
-  | 'deletedAt'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'author'
-  | 'task'
->;
+export class CreatedCommentDto {
+  @IsEnum(['visible', 'hidden'])
+  status: CommentStatusType;
 
-export type UpdatedCommentType = Partial<Omit<CommentType, 'id' | 'deletedAt' | 'createdAt' | 'updatedAt' | 'author' | 'task'>>;
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+
+  @IsInt()
+  authorId: number;
+
+  @IsInt()
+  taskId: number;
+}
+
+export class UpdatedCommentDto {
+  @IsEnum(['visible', 'hidden'])
+  @IsOptional()
+  status?: CommentStatusType;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsInt()
+  @IsOptional()
+  authorId?: number;
+
+  @IsInt()
+  @IsOptional()
+  taskId?: number;
+}

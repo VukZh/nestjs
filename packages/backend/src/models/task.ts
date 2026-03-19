@@ -1,8 +1,9 @@
 import { UserType } from './user';
 import { TagType } from './tag';
 import { CommentType } from './comment';
+import { IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-type TaskStatusType = 'draft'|'published';
+export type TaskStatusType = 'draft' | 'published';
 
 export type TaskType = {
   id: number;
@@ -18,6 +19,54 @@ export type TaskType = {
   deletedAt: Date | string | null;
 };
 
-export type CreatedTaskType = Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'> & { tagIds?: number[], comment?: string };
+export class CreatedTaskDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
 
-export type UpdatedTaskType = Partial<Omit<TaskType, 'id'|'createdAt'|'updatedAt'|'deletedAt' | 'comments' | 'author' | 'tags'>> & { tagIds?: number[], comment?: string };
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+
+  @IsEnum(['draft', 'published'])
+  status: TaskStatusType;
+
+  @IsInt()
+  authorId: number;
+
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  tagIds?: number[];
+
+  @IsString()
+  @IsOptional()
+  comment?: string;
+}
+
+export class UpdatedTaskDto {
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsEnum(['draft', 'published'])
+  @IsOptional()
+  status?: TaskStatusType;
+
+  @IsInt()
+  @IsOptional()
+  authorId?: number;
+
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  tagIds?: number[];
+
+  @IsString()
+  @IsOptional()
+  comment?: string;
+}

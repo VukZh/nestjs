@@ -10,7 +10,7 @@ import {
   Headers,
 } from '@nestjs/common';
 import { UsersService } from "./users.service";
-import { CreatedUserType, UpdatedUserType, UserType } from '../models/user';
+import { CreatedUserDto, UpdatedUserDto } from '../models/user';
 
 @Controller('users')
 export class UsersController {
@@ -24,14 +24,14 @@ export class UsersController {
   }
 
   @Post()
-  createUser(@Body() user: CreatedUserType) {
+  createUser(@Body() user: CreatedUserDto) {
     return this.usersService.createUser(user);
   }
 
   @Patch(':id')
   async updateUser(
     @Param('id') id: string,
-    @Body() user: UpdatedUserType,
+    @Body() user: UpdatedUserDto,
     @Headers('x-user-role') userRole: string,
   ) {
     const result = await this.usersService.updateUserById(+id, user, userRole);

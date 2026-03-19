@@ -11,7 +11,7 @@ import {
   Headers,
 } from '@nestjs/common';
 import { TasksService } from "./tasks.service";
-import { CreatedTaskType, TaskType, UpdatedTaskType } from '../models/task';
+import { CreatedTaskDto, UpdatedTaskDto } from '../models/task';
 
 @Controller('tasks')
 export class TasksController {
@@ -36,7 +36,7 @@ export class TasksController {
 
   @Post()
   async createTask(
-    @Body() task: CreatedTaskType,
+    @Body() task: CreatedTaskDto,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
@@ -46,7 +46,7 @@ export class TasksController {
   @Patch(':id')
   async updateTask(
     @Param('id') id: string,
-    @Body() task: UpdatedTaskType,
+    @Body() task: UpdatedTaskDto,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {

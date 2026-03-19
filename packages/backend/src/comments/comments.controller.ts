@@ -1,10 +1,6 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Headers, Query } from '@nestjs/common';
 import { CommentsService } from "./comments.service";
-import {
-  CommentType,
-  CreatedCommentType,
-  UpdatedCommentType,
-} from '../models/comment';
+import { CreatedCommentDto, UpdatedCommentDto } from '../models/comment';
 
 @Controller('comments')
 export class CommentsController {
@@ -17,7 +13,7 @@ export class CommentsController {
 
   @Post()
   async createComment(
-    @Body() comment: CreatedCommentType,
+    @Body() comment: CreatedCommentDto,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {
@@ -27,7 +23,7 @@ export class CommentsController {
   @Patch(':id')
   async updateComment(
     @Param('id') id: string,
-    @Body() comment: UpdatedCommentType,
+    @Body() comment: UpdatedCommentDto,
     @Headers('x-user-id') userId: string,
     @Headers('x-user-role') userRole: string,
   ) {

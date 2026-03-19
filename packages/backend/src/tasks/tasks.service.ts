@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 
-import { CreatedTaskType, TaskType, UpdatedTaskType } from '../models/task';
+import { CreatedTaskDto, TaskType, UpdatedTaskDto } from '../models/task';
 import { DBService } from '../db/db.service';
+import { isLoggingEnabled } from "../main";
 
 @Injectable()
 export class TasksService {
@@ -35,12 +36,12 @@ export class TasksService {
       skip: (page - 1) * limit,
       take: limit,
     });
-    this.logger.debug('get all tasks');
+    isLoggingEnabled && this.logger.debug('get all tasks');
     return tasks;
   }
 
   async createTask(
-    task: CreatedTaskType,
+    task: CreatedTaskDto,
     currentUser: { id: number; role: string },
   ) {
     if (currentUser.role !== 'admin' && currentUser.role !== 'author') {
@@ -74,7 +75,7 @@ export class TasksService {
       },
       include: { tags: true, author: true, comments: true },
     });
-    this.logger.debug('add task', createdTask);
+    isLoggingEnabled && this.logger.debug('add task', createdTask);
 
     return createdTask;
   }
@@ -86,7 +87,7 @@ export class TasksService {
     });
     if (!taskExists) return null;
 
-    this.logger.debug(`get task ${id}`);
+    isLoggingEnabled && this.logger.debug(`get task ${id}`);
     return taskExists;
   }
 
@@ -102,13 +103,13 @@ export class TasksService {
       where: { id },
       data: { deletedAt: new Date() },
     });
-    this.logger.debug(`delete task ${id}`);
+    isLoggingEnabled && this.logger.debug(`delete task ${id}`);
     return id;
   }
 
   async updateTaskById(
     id: number,
-    taskUpdated: UpdatedTaskType,
+    taskUpdated: UpdatedTaskDto,
     currentUser: { id: number; role: string },
   ) {
     const task = await this.prisma.task.findUnique({ where: { id } });
@@ -139,7 +140,7 @@ export class TasksService {
           : undefined,
       },
     });
-    this.logger.debug(`update task ${id}`);
+    isLoggingEnabled && this.logger.debug(`update task ${id}`);
     return id;
   }
 }
