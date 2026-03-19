@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Headers, Query, ParseIntPipe } from '@nestjs/common';
 import { CommentsService } from "./comments.service";
 import { CreatedCommentDto, UpdatedCommentDto, GetCommentsDto } from '../models/comment';
+import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('comments')
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentService: CommentsService) {}
@@ -11,6 +13,8 @@ export class CommentsController {
     return this.commentService.getAll(query.all === true);
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Post()
   async createComment(
     @Body() comment: CreatedCommentDto,
@@ -20,6 +24,8 @@ export class CommentsController {
     return await this.commentService.createComment(comment, { id: +userId, role: userRole });
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Patch(':id')
   async updateComment(
     @Param('id', ParseIntPipe) id: number,
@@ -35,6 +41,8 @@ export class CommentsController {
     };
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Delete(':id')
   async deleteComment(
     @Param('id', ParseIntPipe) id: number,

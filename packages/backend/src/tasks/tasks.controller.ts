@@ -13,16 +13,21 @@ import {
 } from '@nestjs/common';
 import { TasksService } from "./tasks.service";
 import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
+import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all tasks with optional filters' })
   getAll(@Query() query: GetTasksDto) {
     return this.tasksService.getAll(query);
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Post()
   async createTask(
     @Body() task: CreatedTaskDto,
@@ -32,6 +37,8 @@ export class TasksController {
     return await this.tasksService.createTask(task, { id: +userId, role: userRole });
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Patch(':id')
   async updateTask(
     @Param('id', ParseIntPipe) id: number,
@@ -47,6 +54,8 @@ export class TasksController {
     };
   }
 
+  @ApiHeader({ name: 'x-user-id', required: true })
+  @ApiHeader({ name: 'x-user-role', required: true })
   @Delete(':id')
   async deleteTask(
     @Param('id', ParseIntPipe) id: number,
