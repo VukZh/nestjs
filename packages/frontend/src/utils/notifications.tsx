@@ -1,6 +1,11 @@
 import { notifications } from '@mantine/notifications';
 
-export const showErrorNotification = (title: string, error: any) => {
+export const showErrorNotification = (
+  title: string,
+  error: {
+    message: string | string[];
+  },
+) => {
   let message = 'An unexpected error occurred';
 
   if (typeof error === 'string') {

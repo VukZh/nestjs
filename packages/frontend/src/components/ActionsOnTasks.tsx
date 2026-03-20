@@ -44,6 +44,29 @@ type ActionsOnTasksType = {
   setUser?: (user: UserType) => void;
 };
 
+type FilterState = {
+  tags: string[];
+  status: string;
+  authors: string[];
+  page: number;
+  limit: number;
+};
+
+type FilterAction =
+  | { type: 'tags'; payload: string[] }
+  | { type: 'status'; payload: string }
+  | { type: 'authors'; payload: string[] }
+  | { type: 'page'; payload: number }
+  | { type: 'limit'; payload: number };
+
+const initialState: FilterState = {
+  tags: [],
+  status: '',
+  authors: [],
+  page: 1,
+  limit: 10,
+};
+
 export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const { user, setUser } = props;
   const [tasks, setTasks] = useState<TaskExtendedType[]>([]);
@@ -90,7 +113,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       const data = await response.json();
       setUsers(data);
     } catch (error) {
-      showErrorNotification('Error fetching users', error);
+      showErrorNotification('Error fetching users', error as Error);
     }
   };
 
@@ -104,7 +127,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       const data = await response.json();
       setTags(data);
     } catch (error) {
-      showErrorNotification('Error fetching tags', error);
+      showErrorNotification('Error fetching tags', error as Error);
     }
   };
 
@@ -120,15 +143,21 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const handleGetTasks = async () => {
     try {
       const params = new URLSearchParams();
-      filterState.page && params.append('page', filterState.page.toString());
-      filterState.limit && params.append('limit', filterState.limit.toString());
+      if (filterState.page) {
+        params.append('page', filterState.page.toString());
+      }
+      if (filterState.limit) {
+        params.append('limit', filterState.limit.toString());
+      }
       filterState.tags.forEach((tag: string) => {
         params.append('tagIds', tag);
       });
       filterState.authors.forEach((author: string) => {
         params.append('authorIds', author);
       });
-      filterState.status && params.append('status', filterState.status);
+      if (filterState.status) {
+        params.append('status', filterState.status);
+      }
       const response = await fetch(
         `http://localhost:${PORT}/tasks?${params.toString()}`,
       );
@@ -140,11 +169,11 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
       setTasks(data);
       showSuccessNotification('Tasks successfully loaded!');
     } catch (error) {
-      showErrorNotification('Error fetching tasks', error);
+      showErrorNotification('Error fetching tasks', error as Error);
     }
   };
 
-  const reducer = (state: any, action: any) => {
+  const reducer = (state: FilterState, action: FilterAction): FilterState => {
     switch (action.type) {
       case 'tags': {
         return { ...state, tags: action.payload };
@@ -167,13 +196,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
     }
   };
 
-  const [filterState, filterDispatch] = useReducer(reducer, {
-    tags: [],
-    status: '',
-    authors: [],
-    page: 1,
-    limit: 10,
-  });
+  const [filterState, filterDispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     if (user) {
@@ -215,7 +238,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         showErrorNotification('Error adding task', await resp.json());
       }
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 
@@ -236,13 +259,15 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         showErrorNotification('Error deleting task', await resp.json());
       }
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 
   const handleOpenEdit = async () => {
     if (!selectedTaskId) {
-      showErrorNotification('Input required', 'Please input task ID');
+      showErrorNotification('Input required', {
+        message: 'Please input task ID',
+      });
       return;
     }
     try {
@@ -263,7 +288,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         showErrorNotification('Task not found', await resp.json());
       }
     } catch (e) {
-      showErrorNotification('Error fetching task', e);
+      showErrorNotification('Error fetching task', e as Error);
     }
   };
 
@@ -302,7 +327,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         showErrorNotification('Something went wrong!', await resp.json());
       }
     } catch (e) {
-      showErrorNotification('Something went wrong!', e);
+      showErrorNotification('Something went wrong!', e as Error);
     }
   };
 
@@ -318,8 +343,8 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         value={user?.id?.toString()}
         onChange={(value) => {
           const selectedUser = users.find((u) => u.id === Number(value));
-          if (selectedUser) {
-            setUser && setUser(selectedUser);
+          if (selectedUser && setUser) {
+            setUser(selectedUser);
           }
         }}
       ></Select>
@@ -385,7 +410,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           clearable
           data={['draft', 'published']}
           onChange={(value) =>
-            filterDispatch({ type: 'status', payload: value })
+            filterDispatch({ type: 'status', payload: value as string })
           }
           defaultValue={filterState.status}
         />
@@ -406,7 +431,9 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           label="Page"
           placeholder="Enter page number"
           min={1}
-          onChange={(value) => filterDispatch({ type: 'page', payload: value })}
+          onChange={(value) =>
+            filterDispatch({ type: 'page', payload: value as number })
+          }
           defaultValue={filterState.page}
         />
         <NumberInput
@@ -414,7 +441,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           placeholder="Enter limit number"
           min={1}
           onChange={(value) =>
-            filterDispatch({ type: 'limit', payload: value })
+            filterDispatch({ type: 'limit', payload: value as number })
           }
           defaultValue={filterState.limit}
         />
