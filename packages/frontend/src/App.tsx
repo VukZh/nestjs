@@ -4,7 +4,6 @@ import { Accordion, AccordionControl, AppShell } from '@mantine/core';
 import { Users } from './components/Users.tsx';
 import { Comments } from './components/Comments.tsx';
 import { Tags } from './components/Tags.tsx';
-import { Tasks } from './components/Tasks.tsx';
 import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
 import type { UserType } from 'backend/dist/src/models/user.ts';
 import { showErrorNotification } from './utils/notifications.tsx';
@@ -25,7 +24,7 @@ function App() {
           showErrorNotification('Server check failed', data);
         }
       } catch (e) {
-        showErrorNotification('Server check failed', e);
+        showErrorNotification('Server check failed', e as Error);
       }
     };
     fetchData();
@@ -49,15 +48,6 @@ function App() {
             </AccordionControl>
             <Accordion.Panel>
               <Users user={currentUser} />
-            </Accordion.Panel>
-          </Accordion.Item>
-          <Accordion.Item value="tasks">
-            {' '}
-            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
-              Tasks
-            </AccordionControl>
-            <Accordion.Panel>
-              <Tasks user={currentUser} />
             </Accordion.Panel>
           </Accordion.Item>
           <Accordion.Item value="tags">
