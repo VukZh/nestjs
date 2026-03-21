@@ -53,3 +53,12 @@ export type CommentType = {
   updatedAt: Date | string;
   deletedAt: Date | string | null;
 };
+
+export type SignInType = {
+  email: string;
+  password: string;
+}
+
+export type SignUpType = SignInType & {
+  password2: string;
+};

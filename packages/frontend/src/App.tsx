@@ -7,10 +7,12 @@ import { Tags } from './components/Tags.tsx';
 import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
 import type { UserType } from 'backend/dist/src/models/user.ts';
 import { showErrorNotification } from './utils/notifications.tsx';
+import { Auth } from "./components/auth.tsx";
 
 export const PORT = import.meta.env.VITE_PORT;
 
 function App() {
+
   const [currentUser, setCurrentUser] = useState<UserType | undefined>(
     undefined,
   );
@@ -36,44 +38,46 @@ function App() {
         <div>NestJS + React</div>
       </AppShell.Header>
 
-      <AppShell.Main style={{ paddingTop: '24px' }}>
-        <Accordion
-          multiple
-          // defaultValue={['users', 'tasks', 'tags', 'comments']}
-          chevronPosition="left"
-        >
-          <Accordion.Item value="users">
-            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
-              Users
-            </AccordionControl>
-            <Accordion.Panel>
-              <Users user={currentUser} />
-            </Accordion.Panel>
-          </Accordion.Item>
-          <Accordion.Item value="tags">
-            {' '}
-            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
-              Tags
-            </AccordionControl>
-            <Accordion.Panel>
-              <Tags user={currentUser} />
-            </Accordion.Panel>
-          </Accordion.Item>
-          <Accordion.Item value="comments">
-            {' '}
-            <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
-              Comments
-            </AccordionControl>
-            <Accordion.Panel>
-              <Comments user={currentUser} />
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-        <ActionsOnTasks
-          user={currentUser || undefined}
-          setUser={setCurrentUser || undefined}
-        />
-      </AppShell.Main>
+      <Auth />
+
+      {/*<AppShell.Main style={{ paddingTop: '24px' }}>*/}
+      {/*  <Accordion*/}
+      {/*    multiple*/}
+      {/*    // defaultValue={['users', 'tasks', 'tags', 'comments']}*/}
+      {/*    chevronPosition="left"*/}
+      {/*  >*/}
+      {/*    <Accordion.Item value="users">*/}
+      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
+      {/*        Users*/}
+      {/*      </AccordionControl>*/}
+      {/*      <Accordion.Panel>*/}
+      {/*        <Users user={currentUser} />*/}
+      {/*      </Accordion.Panel>*/}
+      {/*    </Accordion.Item>*/}
+      {/*    <Accordion.Item value="tags">*/}
+      {/*      {' '}*/}
+      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
+      {/*        Tags*/}
+      {/*      </AccordionControl>*/}
+      {/*      <Accordion.Panel>*/}
+      {/*        <Tags user={currentUser} />*/}
+      {/*      </Accordion.Panel>*/}
+      {/*    </Accordion.Item>*/}
+      {/*    <Accordion.Item value="comments">*/}
+      {/*      {' '}*/}
+      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
+      {/*        Comments*/}
+      {/*      </AccordionControl>*/}
+      {/*      <Accordion.Panel>*/}
+      {/*        <Comments user={currentUser} />*/}
+      {/*      </Accordion.Panel>*/}
+      {/*    </Accordion.Item>*/}
+      {/*  </Accordion>*/}
+      {/*  <ActionsOnTasks*/}
+      {/*    user={currentUser || undefined}*/}
+      {/*    setUser={setCurrentUser || undefined}*/}
+      {/*  />*/}
+      {/*</AppShell.Main>*/}
     </AppShell>
   );
 }
