@@ -3,7 +3,7 @@ export type UserStatusType = 'active' | 'blocked';
 
 export type UserType = {
   id: number;
-  name: string;
+  name?: string;
   email: string;
   role: UserRoleType;
   status: UserStatusType;
@@ -59,6 +59,4 @@ export type SignInType = {
   password: string;
 }
 
-export type SignUpType = SignInType & {
-  password2: string;
-};
+export type SignUpType = SignInType;

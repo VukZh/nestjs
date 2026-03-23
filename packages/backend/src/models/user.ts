@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MinLength,
 } from 'class-validator';
 import { UserRoleType, UserStatusType, UserType } from './types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -13,11 +14,12 @@ export { UserRoleType, UserStatusType, UserType };
 export class CreatedUserDto {
   @ApiProperty({ description: 'The name of the user' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiProperty({ description: 'The email of the user' })
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
@@ -33,6 +35,11 @@ export class CreatedUserDto {
   })
   @IsEnum(['active', 'blocked'])
   status: UserStatusType;
+
+  @ApiProperty({ description: 'The password of the user' })
+  @IsString()
+  @MinLength(6)
+  password: string;
 }
 
 export class UpdatedUserDto {

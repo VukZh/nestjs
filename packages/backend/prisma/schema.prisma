@@ -60,12 +60,13 @@ enum TaskStatusType {
 
 model User {
   id        Int            @id @default(autoincrement())
-  name      String
+  name      String?
   email     String         @unique
-  role      UserRoleType
-  status    UserStatusType
+  role      UserRoleType   @default(user)
+  status    UserStatusType @default(active)
   tasks     Task[]         @relation("UserTasks")
   comments  Comment[]      @relation("UserComments")
+  password  String
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
   deletedAt DateTime?
