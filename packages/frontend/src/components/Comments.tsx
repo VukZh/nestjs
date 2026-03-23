@@ -76,7 +76,7 @@ export const Comments = (props: CommentsProps) => {
       const data = await resp.json();
       setComments(data);
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleAdd = async (values: {
@@ -102,7 +102,7 @@ export const Comments = (props: CommentsProps) => {
       handleReload();
       close();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleDelete = async (id: string) => {
@@ -118,7 +118,7 @@ export const Comments = (props: CommentsProps) => {
       showSuccessNotification('Comment successfully deleted!');
       handleReload();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 
@@ -134,7 +134,7 @@ export const Comments = (props: CommentsProps) => {
         const data = await resp.json();
         formEdit.setValues(data);
       } catch (e) {
-        showErrorNotification('Error', e);
+        showErrorNotification('Error', e as Error);
       }
     };
     getComment(selectedComment);
@@ -164,7 +164,7 @@ export const Comments = (props: CommentsProps) => {
       handleReload();
       closeEdit();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 

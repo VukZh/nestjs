@@ -10,17 +10,14 @@ import { SignInDto, SignUpDto } from '../models/auth';
 import * as argon2 from 'argon2';
 import { DBService } from '../db/db.service';
 import { isLoggingEnabled } from '../main';
+import { JwtService } from '@nestjs/jwt';
 
-type PassTableType = {
-  email: string;
-  password: string;
-};
 
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
 
-  constructor(private prisma: DBService) {}
+  constructor(private prisma: DBService, private jwtService: JwtService) {}
 
   async signUp(signUpDto: SignUpDto) {
     isLoggingEnabled && this.logger.debug('Trying to sign up: ', signUpDto.email);
@@ -58,9 +55,15 @@ export class AuthService {
     if (!isPasswordMatching) {
       throw new UnauthorizedException('Password is incorrect');
     }
+    const jwtPayload = { email: UserExists.email, id: UserExists.id, role: UserExists.role };
     return {
       message: 'Login successful',
-      user: UserExists.id,
+      access_token: await this.jwtService.signAsync(jwtPayload),
+      user: {
+        id: UserExists.id,
+        email: UserExists.email,
+        role: UserExists.role,
+      },
     }
   }
 }
