@@ -14,10 +14,11 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreatedUserDto, UpdatedUserDto } from '../models/user';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 import type { Request } from 'express';
 
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('users')
 @Controller('users')
@@ -58,7 +59,7 @@ export class UsersController {
   @Delete(':id')
   async deleteUser(
     @Param('id', ParseIntPipe) id: number,
-    req: Request & { user: { role: string } },
+    @Req() req: Request & { user: { role: string } },
   ) {
     const result = await this.usersService.deleteUserById(id, req.user.role);
     if (!result) throw new NotFoundException(`User ${id} not found`);
@@ -67,7 +68,6 @@ export class UsersController {
       user: result,
     };
   }
-
   @Get(':id')
   getUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getUserById(id);

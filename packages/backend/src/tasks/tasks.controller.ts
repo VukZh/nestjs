@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
-import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 
@@ -29,6 +29,7 @@ export class TasksController {
     return this.tasksService.getAll(query);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
   async createTask(
@@ -41,6 +42,7 @@ export class TasksController {
     return await this.tasksService.createTask(task, req.user);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateTask(
@@ -59,6 +61,7 @@ export class TasksController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteTask(

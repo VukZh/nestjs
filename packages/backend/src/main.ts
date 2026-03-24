@@ -34,11 +34,7 @@ async function bootstrap() {
     .addTag('tasks')
     .addTag('tags')
     .addTag('comments')
-    .addApiKey({ type: 'apiKey', name: 'x-user-id', in: 'header' }, 'x-user-id')
-    .addApiKey(
-      { type: 'apiKey', name: 'x-user-role', in: 'header' },
-      'x-user-role',
-    )
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

@@ -18,11 +18,12 @@ import {
   UpdatedCommentDto,
   GetCommentsDto,
 } from '../models/comment';
-import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 import { Request } from 'express';
 
 
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('comments')
 @Controller('comments')
