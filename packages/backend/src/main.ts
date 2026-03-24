@@ -4,11 +4,13 @@ import * as dotenv from 'dotenv';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 export const isLoggingEnabled = process.env.LOG_DEBUG === 'true' || false;
+const FE_URL = process.env.FE_URL || 'http://localhost:5173';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -24,7 +26,25 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.enableCors();
+  app.enableCors({
+    origin: FE_URL,
+    methods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
+    credentials: true,
+  });
+  app.use(
+    helmet({
+      xFrameOptions: { action: 'sameorigin' },
+      xXssProtection: true,
+      contentSecurityPolicy: {
+        directives: {
+          'default-src': ["'self'"],
+          'script-src': ["'self'", "'unsafe-inline'"],
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'img-src': ["'self'", "'unsafe-inline'"],
+        },
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('NestJS Project API')
