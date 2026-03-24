@@ -17,7 +17,9 @@ import { CreatedUserDto, UpdatedUserDto } from '../models/user';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 import type { Request } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('users')

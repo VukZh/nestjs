@@ -13,7 +13,9 @@ import {
 import { TagsService } from './tags.service';
 import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 import { ApiTags, ApiHeader } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @ApiTags('tags')
 @Controller('tags')
 export class TagsController {

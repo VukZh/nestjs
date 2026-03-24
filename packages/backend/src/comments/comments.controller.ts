@@ -21,8 +21,9 @@ import {
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 import { Request } from 'express';
+import { SkipThrottle } from '@nestjs/throttler';
 
-
+@SkipThrottle()
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('comments')
@@ -38,9 +39,10 @@ export class CommentsController {
   @Post()
   async createComment(
     @Body() comment: CreatedCommentDto,
-    @Req() req: Request & {
+    @Req()
+    req: Request & {
       user: { id: number; role: string };
-    }
+    },
   ) {
     return await this.commentService.createComment(comment, req.user);
   }
@@ -49,11 +51,16 @@ export class CommentsController {
   async updateComment(
     @Param('id', ParseIntPipe) id: number,
     @Body() comment: UpdatedCommentDto,
-    @Req() req: Request & {
+    @Req()
+    req: Request & {
       user: { id: number; role: string };
-    }
+    },
   ) {
-    const result = await this.commentService.updateCommentById(id, comment, req.user);
+    const result = await this.commentService.updateCommentById(
+      id,
+      comment,
+      req.user,
+    );
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment updated successfully',
@@ -64,9 +71,10 @@ export class CommentsController {
   @Delete(':id')
   async deleteComment(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request & {
+    @Req()
+    req: Request & {
       user: { id: number; role: string };
-    }
+    },
   ) {
     const result = await this.commentService.deleteCommentById(id, req.user);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);

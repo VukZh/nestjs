@@ -17,7 +17,9 @@ import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth-guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
