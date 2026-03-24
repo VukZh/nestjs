@@ -8,12 +8,15 @@ import {
   Patch,
   Post,
   Query,
-  Headers,
   ParseIntPipe,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreatedTaskDto, UpdatedTaskDto, GetTasksDto } from '../models/task';
 import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -26,33 +29,29 @@ export class TasksController {
     return this.tasksService.getAll(query);
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createTask(
     @Body() task: CreatedTaskDto,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req()
+    req: Request & {
+      user: { id: number; role: string };
+    },
   ) {
-    return await this.tasksService.createTask(task, {
-      id: +userId,
-      role: userRole,
-    });
+    return await this.tasksService.createTask(task, req.user);
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateTask(
     @Param('id', ParseIntPipe) id: number,
     @Body() task: UpdatedTaskDto,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req()
+    req: Request & {
+      user: { id: number; role: string };
+    },
   ) {
-    const result = await this.tasksService.updateTaskById(id, task, {
-      id: +userId,
-      role: userRole,
-    });
+    const result = await this.tasksService.updateTaskById(id, task, req.user);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task updated successfully',
@@ -60,18 +59,16 @@ export class TasksController {
     };
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteTask(
     @Param('id', ParseIntPipe) id: number,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req()
+    req: Request & {
+      user: { id: number; role: string };
+    },
   ) {
-    const result = await this.tasksService.deleteTaskById(id, {
-      id: +userId,
-      role: userRole,
-    });
+    const result = await this.tasksService.deleteTaskById(id, req.user);
     if (!result) throw new NotFoundException(`Task ${id} not found`);
     return {
       message: 'Task deleted successfully',

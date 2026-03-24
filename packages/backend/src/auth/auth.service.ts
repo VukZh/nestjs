@@ -55,7 +55,7 @@ export class AuthService {
     if (!isPasswordMatching) {
       throw new UnauthorizedException('Password is incorrect');
     }
-    const jwtPayload = { email: UserExists.email, id: UserExists.id, role: UserExists.role };
+    const jwtPayload = { email: UserExists.email, sub: UserExists.id, role: UserExists.role };
     return {
       message: 'Login successful',
       access_token: await this.jwtService.signAsync(jwtPayload),

@@ -7,20 +7,28 @@ import {
   Param,
   Patch,
   Post,
-  Headers,
   ParseIntPipe,
+  UseGuards,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreatedUserDto, UpdatedUserDto } from '../models/user';
-import { ApiTags, ApiHeader } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth-guard';
+import type { Request } from 'express';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getAll() {
+  getAll(@Req() req: Request & { user: { role: string } }) {
+    if (req?.user?.role! !== 'admin') {
+      throw new ForbiddenException('Only admin can access this resource');
+    }
     return this.usersService.getAll();
   }
 
@@ -29,14 +37,17 @@ export class UsersController {
     return this.usersService.createUser(user);
   }
 
-  @ApiHeader({ name: 'x-user-role', required: true })
   @Patch(':id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() user: UpdatedUserDto,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & { user: { role: string } },
   ) {
-    const result = await this.usersService.updateUserById(id, user, userRole);
+    const result = await this.usersService.updateUserById(
+      id,
+      user,
+      req.user.role,
+    );
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User updated successfully',
@@ -44,13 +55,12 @@ export class UsersController {
     };
   }
 
-  @ApiHeader({ name: 'x-user-role', required: true })
   @Delete(':id')
   async deleteUser(
     @Param('id', ParseIntPipe) id: number,
-    @Headers('x-user-role') userRole: string,
+    req: Request & { user: { role: string } },
   ) {
-    const result = await this.usersService.deleteUserById(id, userRole);
+    const result = await this.usersService.deleteUserById(id, req.user.role);
     if (!result) throw new NotFoundException(`User ${id} not found`);
     return {
       message: 'User deleted successfully',

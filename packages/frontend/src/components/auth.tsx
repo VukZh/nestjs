@@ -32,9 +32,10 @@ export const Auth = () => {
     if (!resp.ok) {
       showErrorNotification('Error signing in', await resp.json());
     } else {
+      const res = await resp.json();
       showSuccessNotification('Successfully signed in');
+      localStorage.setItem('token', res.access_token);
     }
-    console.log(await resp.json());
   };
 
   const handleSignUp = async (values: SignUpType) => {

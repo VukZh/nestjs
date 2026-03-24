@@ -7,9 +7,10 @@ import {
   Param,
   Patch,
   Post,
-  Headers,
   Query,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import {
@@ -18,7 +19,11 @@ import {
   GetCommentsDto,
 } from '../models/comment';
 import { ApiTags, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth-guard';
+import { Request } from 'express';
 
+
+@UseGuards(JwtAuthGuard)
 @ApiTags('comments')
 @Controller('comments')
 export class CommentsController {
@@ -29,33 +34,25 @@ export class CommentsController {
     return this.commentService.getAll(query.all === true);
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
   @Post()
   async createComment(
     @Body() comment: CreatedCommentDto,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & {
+      user: { id: number; role: string };
+    }
   ) {
-    return await this.commentService.createComment(comment, {
-      id: +userId,
-      role: userRole,
-    });
+    return await this.commentService.createComment(comment, req.user);
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
   @Patch(':id')
   async updateComment(
     @Param('id', ParseIntPipe) id: number,
     @Body() comment: UpdatedCommentDto,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & {
+      user: { id: number; role: string };
+    }
   ) {
-    const result = await this.commentService.updateCommentById(id, comment, {
-      id: +userId,
-      role: userRole,
-    });
+    const result = await this.commentService.updateCommentById(id, comment, req.user);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment updated successfully',
@@ -63,18 +60,14 @@ export class CommentsController {
     };
   }
 
-  @ApiHeader({ name: 'x-user-id', required: true })
-  @ApiHeader({ name: 'x-user-role', required: true })
   @Delete(':id')
   async deleteComment(
     @Param('id', ParseIntPipe) id: number,
-    @Headers('x-user-id') userId: string,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & {
+      user: { id: number; role: string };
+    }
   ) {
-    const result = await this.commentService.deleteCommentById(id, {
-      id: +userId,
-      role: userRole,
-    });
+    const result = await this.commentService.deleteCommentById(id, req.user);
     if (!result) throw new NotFoundException(`Comment ${id} not found`);
     return {
       message: 'Comment deleted successfully',
