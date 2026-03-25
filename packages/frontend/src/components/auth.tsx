@@ -2,6 +2,7 @@ import { useForm } from '@mantine/form';
 import {
   type SignInType,
   type SignUpType,
+  type UserType,
 } from '../../../backend/src/models/types.ts';
 import { Button, Group, TextInput, Tabs } from '@mantine/core';
 import { PORT } from '../App.tsx';
@@ -10,7 +11,12 @@ import {
   showSuccessNotification,
 } from '../utils/notifications.tsx';
 
-export const Auth = () => {
+type AuthType = {
+  setToken: (token: string) => void;
+  setUser: (user: Pick<UserType, 'id' | 'email' | 'role'>) => void;
+};
+
+export const Auth = ({ setToken, setUser }: AuthType) => {
   const signInForm = useForm({
     mode: 'uncontrolled',
     initialValues: { email: '', password: '' },
@@ -34,7 +40,8 @@ export const Auth = () => {
     } else {
       const res = await resp.json();
       showSuccessNotification('Successfully signed in');
-      localStorage.setItem('token', res.access_token);
+      setToken(res.access_token);
+      setUser(res.user);
     }
   };
 

@@ -25,13 +25,16 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
+import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
+import { useCookies } from 'react-cookie';
 
 type UsersProps = {
-  user?: UserType;
+  user?: Pick<UserType, 'id' | 'email' | 'role'>;
 };
 
 export const Users = (props: UsersProps) => {
   const { user } = props;
+  const [cookies] = useCookies(['token']);
   const [selectedUser, setSelectedUser] = useDebouncedState('', 500);
   const [users, setUsers] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -64,7 +67,11 @@ export const Users = (props: UsersProps) => {
 
   const handleReload = async () => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/users`);
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/users`,
+        {},
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error loading users', await resp.json());
         return;
@@ -72,7 +79,7 @@ export const Users = (props: UsersProps) => {
       const data = await resp.json();
       setUsers(data);
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleAdd = async (
@@ -80,16 +87,20 @@ export const Users = (props: UsersProps) => {
   ) => {
     try {
       const { name, email, role, status } = values;
-      const resp = await fetch(`http://localhost:${PORT}/users`, {
-        method: 'POST',
-        headers: getCommonHeaders(),
-        body: JSON.stringify({
-          name,
-          email,
-          role,
-          status,
-        }),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/users`,
+        {
+          method: 'POST',
+          headers: getCommonHeaders(),
+          body: JSON.stringify({
+            name,
+            email,
+            role,
+            status,
+          }),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error adding user', await resp.json());
         return;
@@ -98,15 +109,19 @@ export const Users = (props: UsersProps) => {
       handleReload();
       close();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleDelete = async (id: string) => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/users/${id}`, {
-        method: 'DELETE',
-        headers: getCommonHeaders(),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/users/${id}`,
+        {
+          method: 'DELETE',
+          headers: getCommonHeaders(),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error deleting user', await resp.json());
         return;
@@ -114,7 +129,7 @@ export const Users = (props: UsersProps) => {
       showSuccessNotification('User successfully deleted!');
       handleReload();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 
@@ -122,7 +137,11 @@ export const Users = (props: UsersProps) => {
     const getUser = async (id: string) => {
       if (!id) return;
       try {
-        const resp = await fetch(`http://localhost:${PORT}/users/${id}`);
+        const resp = await fetchWithAuth(
+          `http://localhost:${PORT}/users/${id}`,
+          {},
+          cookies.token,
+        );
         if (!resp.ok) {
           showErrorNotification('Error loading user', await resp.json());
           return;
@@ -130,7 +149,7 @@ export const Users = (props: UsersProps) => {
         const data = await resp.json();
         formEdit.setValues(data);
       } catch (e) {
-        showErrorNotification('Error', e);
+        showErrorNotification('Error', e as Error);
       }
     };
     getUser(selectedUser);
@@ -141,7 +160,7 @@ export const Users = (props: UsersProps) => {
   ) => {
     try {
       const { name, email, role, status } = values;
-      const resp = await fetch(
+      const resp = await fetchWithAuth(
         `http://localhost:${PORT}/users/${selectedUser}`,
         {
           method: 'PATCH',
@@ -153,6 +172,7 @@ export const Users = (props: UsersProps) => {
             status,
           }),
         },
+        cookies.token,
       );
       if (!resp.ok) {
         showErrorNotification('Error updating user', await resp.json());
@@ -162,7 +182,7 @@ export const Users = (props: UsersProps) => {
       handleReload();
       closeEdit();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 

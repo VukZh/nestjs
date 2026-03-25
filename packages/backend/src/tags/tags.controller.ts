@@ -9,11 +9,15 @@ import {
   Post,
   Headers,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 import { ApiTags, ApiHeader } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
+import { JwtAuthGuard } from '../auth/jwt-auth-guard';
+import type { Request } from 'express';
 
 @SkipThrottle()
 @ApiTags('tags')
@@ -26,23 +30,23 @@ export class TagsController {
     return this.tagsService.getAll();
   }
 
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createTag(
     @Body() tag: CreatedTagDto,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & { user: { role: string } },
   ) {
-    return await this.tagsService.createTag(tag, userRole);
+    return await this.tagsService.createTag(tag, req.user.role);
   }
 
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateTag(
     @Param('id', ParseIntPipe) id: number,
     @Body() tag: UpdatedTagDto,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & { user: { role: string } },
   ) {
-    const result = await this.tagsService.updateTagById(id, tag, userRole);
+    const result = await this.tagsService.updateTagById(id, tag, req.user.role);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag updated successfully',
@@ -50,13 +54,13 @@ export class TagsController {
     };
   }
 
-  @ApiHeader({ name: 'x-user-role', required: true })
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteTag(
     @Param('id', ParseIntPipe) id: number,
-    @Headers('x-user-role') userRole: string,
+    @Req() req: Request & { user: { role: string } },
   ) {
-    const result = await this.tagsService.deleteTagById(id, userRole);
+    const result = await this.tagsService.deleteTagById(id, req.user.role);
     if (!result) throw new NotFoundException(`Tag ${id} not found`);
     return {
       message: 'Tag deleted successfully',

@@ -12,15 +12,19 @@ import { DBService } from '../db/db.service';
 import { isLoggingEnabled } from '../main';
 import { JwtService } from '@nestjs/jwt';
 
-
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
 
-  constructor(private prisma: DBService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: DBService,
+    private jwtService: JwtService,
+  ) {}
 
   async signUp(signUpDto: SignUpDto) {
-    isLoggingEnabled && this.logger.debug('Trying to sign up: ', signUpDto.email);
+    isLoggingEnabled &&
+      this.logger.debug('Trying to sign up: ', signUpDto.email);
+    const usersCount = await this.prisma.user.count();
     const UserExists = await this.prisma.user.findUnique({
       where: { email: signUpDto.email },
     });
@@ -30,6 +34,7 @@ export class AuthService {
       data: {
         email: signUpDto.email,
         password: hashedPassword,
+        role: usersCount === 0 ? 'admin' : 'user', // First user is admin !!!
       },
     });
     return {
@@ -55,7 +60,11 @@ export class AuthService {
     if (!isPasswordMatching) {
       throw new UnauthorizedException('Password is incorrect');
     }
-    const jwtPayload = { email: UserExists.email, sub: UserExists.id, role: UserExists.role };
+    const jwtPayload = {
+      email: UserExists.email,
+      sub: UserExists.id,
+      role: UserExists.role,
+    };
     return {
       message: 'Login successful',
       access_token: await this.jwtService.signAsync(jwtPayload),
@@ -64,6 +73,6 @@ export class AuthService {
         email: UserExists.email,
         role: UserExists.role,
       },
-    }
+    };
   }
 }

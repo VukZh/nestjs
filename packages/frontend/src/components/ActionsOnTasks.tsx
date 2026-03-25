@@ -33,6 +33,8 @@ import {
   showSuccessNotification,
 } from '../utils/notifications.tsx';
 import { PORT } from '../App.tsx';
+import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
+import { useCookies } from 'react-cookie';
 
 type TaskExtendedType = TaskType & {
   comments: { content: string }[];
@@ -40,8 +42,7 @@ type TaskExtendedType = TaskType & {
 };
 
 type ActionsOnTasksType = {
-  user?: UserType;
-  setUser?: (user: UserType) => void;
+  user?: Pick<UserType, 'id' | 'email' | 'role'>;
 };
 
 type FilterState = {
@@ -67,8 +68,8 @@ const initialState: FilterState = {
   limit: 10,
 };
 
-export const ActionsOnTasks = (props: ActionsOnTasksType) => {
-  const { user, setUser } = props;
+export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
+  const [cookies] = useCookies(['token']);
   const [tasks, setTasks] = useState<TaskExtendedType[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState('');
   const [openedFilter, { open: openFilter, close: closeFilter }] =
@@ -78,7 +79,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
   const [openedEdit, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const [users, setUsers] = useState<UserType[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
 
   const form = useForm({
@@ -103,20 +103,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
     },
   });
 
-  const handleGetUsers = async () => {
-    try {
-      const response = await fetch(`http://localhost:${PORT}/users`);
-      if (!response.ok) {
-        showErrorNotification('Error loading users', await response.json());
-        return;
-      }
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      showErrorNotification('Error fetching users', error as Error);
-    }
-  };
-
   const handleGetTags = async () => {
     try {
       const response = await fetch(`http://localhost:${PORT}/tags`);
@@ -133,7 +119,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   useEffect(() => {
     const getUsersAndTags = async () => {
-      await handleGetUsers();
       await handleGetTags();
     };
     const interval = setInterval(getUsersAndTags, 5000);
@@ -244,14 +229,18 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/tasks/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-role': user?.role || '',
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/tasks/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': user?.id?.toString() || '',
+            'x-user-role': user?.role || '',
+          },
         },
-      });
+        cookies.token,
+      );
       if (resp.ok) {
         handleGetTasks();
         showSuccessNotification('Task successfully deleted!');
@@ -307,7 +296,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
         tagIds: values.tagIds.map(Number),
         comment: values.comment,
       };
-      const resp = await fetch(
+      const resp = await fetchWithAuth(
         `http://localhost:${PORT}/tasks/${selectedTaskId}`,
         {
           method: 'PATCH',
@@ -318,6 +307,7 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
           },
           body: JSON.stringify(payload),
         },
+        cookies.token,
       );
       if (resp.ok) {
         closeEdit();
@@ -333,21 +323,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
 
   return (
     <div style={{ margin: '1rem' }}>
-      <Divider my="xs" label="Select user" labelPosition="left" />
-      <Select
-        placeholder="Select user"
-        data={users.map((u) => ({
-          value: u.id!.toString(),
-          label: u.name + ' (' + u.role + ')',
-        }))}
-        value={user?.id?.toString()}
-        onChange={(value) => {
-          const selectedUser = users.find((u) => u.id === Number(value));
-          if (selectedUser && setUser) {
-            setUser(selectedUser);
-          }
-        }}
-      ></Select>
       <Divider my="xs" label="Add task" labelPosition="left" />
       <ActionIcon variant="filled" color="lime" onClick={open}>
         <TbCategoryPlus style={{ width: '70%', height: '70%' }} />
@@ -413,19 +388,6 @@ export const ActionsOnTasks = (props: ActionsOnTasksType) => {
             filterDispatch({ type: 'status', payload: value as string })
           }
           defaultValue={filterState.status}
-        />
-        <MultiSelect
-          clearable
-          data={users.map((u) => ({
-            value: u.id!.toString(),
-            label: u.name + ' (' + u.role + ')',
-          }))}
-          label="Authors"
-          placeholder="Select authors"
-          onChange={(value) =>
-            filterDispatch({ type: 'authors', payload: value })
-          }
-          defaultValue={filterState.authors}
         />
         <NumberInput
           label="Page"

@@ -25,7 +25,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 
 @SkipThrottle()
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @ApiTags('comments')
 @Controller('comments')
 export class CommentsController {
@@ -36,6 +35,7 @@ export class CommentsController {
     return this.commentService.getAll(query.all === true);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createComment(
     @Body() comment: CreatedCommentDto,
@@ -47,6 +47,7 @@ export class CommentsController {
     return await this.commentService.createComment(comment, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateComment(
     @Param('id', ParseIntPipe) id: number,
@@ -68,6 +69,7 @@ export class CommentsController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteComment(
     @Param('id', ParseIntPipe) id: number,

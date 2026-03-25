@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { Accordion, AccordionControl, AppShell } from '@mantine/core';
+import { Accordion, AccordionControl, AppShell, Button } from '@mantine/core';
 import { Users } from './components/Users.tsx';
 import { Comments } from './components/Comments.tsx';
 import { Tags } from './components/Tags.tsx';
 import { ActionsOnTasks } from './components/ActionsOnTasks.tsx';
 import type { UserType } from 'backend/dist/src/models/user.ts';
 import { showErrorNotification } from './utils/notifications.tsx';
-import { Auth } from "./components/auth.tsx";
+import { Auth } from './components/auth.tsx';
+import { useCookies } from 'react-cookie';
 
 export const PORT = import.meta.env.VITE_PORT;
 
 function App() {
+  const [currentUser, setCurrentUser] = useState<
+    Pick<UserType, 'id' | 'email' | 'role'> | undefined
+  >(undefined);
 
-  const [currentUser, setCurrentUser] = useState<UserType | undefined>(
-    undefined,
-  );
+  const [cookies, setCookie, removeCookie] = useCookies(['token']);
+
+  function handleSetToken(token: string) {
+    setCookie('token', token, { path: '/' });
+  }
+
+  function handleRemoveToken() {
+    removeCookie('token');
+  }
+
+  const hasToken = cookies.token;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,50 +46,70 @@ function App() {
 
   return (
     <AppShell>
-      <AppShell.Header>
+      <AppShell.Header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          height: '31px',
+        }}
+      >
         <div>NestJS + React</div>
+        {hasToken && (
+          <>
+            {currentUser && <div>{currentUser.email}</div>}
+            <Button
+              size="xs"
+              variant="subtle"
+              color="red"
+              onClick={handleRemoveToken}
+            >
+              LogOut
+            </Button>
+          </>
+        )}
       </AppShell.Header>
 
-      <Auth />
-
-      {/*<AppShell.Main style={{ paddingTop: '24px' }}>*/}
-      {/*  <Accordion*/}
-      {/*    multiple*/}
-      {/*    // defaultValue={['users', 'tasks', 'tags', 'comments']}*/}
-      {/*    chevronPosition="left"*/}
-      {/*  >*/}
-      {/*    <Accordion.Item value="users">*/}
-      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
-      {/*        Users*/}
-      {/*      </AccordionControl>*/}
-      {/*      <Accordion.Panel>*/}
-      {/*        <Users user={currentUser} />*/}
-      {/*      </Accordion.Panel>*/}
-      {/*    </Accordion.Item>*/}
-      {/*    <Accordion.Item value="tags">*/}
-      {/*      {' '}*/}
-      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
-      {/*        Tags*/}
-      {/*      </AccordionControl>*/}
-      {/*      <Accordion.Panel>*/}
-      {/*        <Tags user={currentUser} />*/}
-      {/*      </Accordion.Panel>*/}
-      {/*    </Accordion.Item>*/}
-      {/*    <Accordion.Item value="comments">*/}
-      {/*      {' '}*/}
-      {/*      <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>*/}
-      {/*        Comments*/}
-      {/*      </AccordionControl>*/}
-      {/*      <Accordion.Panel>*/}
-      {/*        <Comments user={currentUser} />*/}
-      {/*      </Accordion.Panel>*/}
-      {/*    </Accordion.Item>*/}
-      {/*  </Accordion>*/}
-      {/*  <ActionsOnTasks*/}
-      {/*    user={currentUser || undefined}*/}
-      {/*    setUser={setCurrentUser || undefined}*/}
-      {/*  />*/}
-      {/*</AppShell.Main>*/}
+      <AppShell.Main style={{ paddingTop: '24px' }}>
+        {hasToken ? (
+          <>
+            <Accordion
+              multiple
+              // defaultValue={['users', 'tasks', 'tags', 'comments']}
+              chevronPosition="left"
+            >
+              <Accordion.Item value="users">
+                <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+                  Users
+                </AccordionControl>
+                <Accordion.Panel>
+                  <Users user={currentUser} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value="tags">
+                {' '}
+                <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+                  Tags
+                </AccordionControl>
+                <Accordion.Panel>
+                  <Tags user={currentUser} />
+                </Accordion.Panel>
+              </Accordion.Item>
+              <Accordion.Item value="comments">
+                {' '}
+                <AccordionControl style={{ backgroundColor: '#f5f5f5' }}>
+                  Comments
+                </AccordionControl>
+                <Accordion.Panel>
+                  <Comments user={currentUser} />
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+            <ActionsOnTasks user={currentUser || undefined} />
+          </>
+        ) : (
+          <Auth setToken={handleSetToken} setUser={setCurrentUser} />
+        )}
+      </AppShell.Main>
     </AppShell>
   );
 }

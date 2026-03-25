@@ -7,12 +7,15 @@ import '@mantine/notifications/styles.css';
 import App from './App.tsx';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import { CookiesProvider } from 'react-cookie';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider defaultColorScheme="light">
       <Notifications position="top-right" />
-      <App />
+      <CookiesProvider>
+        <App />
+      </CookiesProvider>
     </MantineProvider>
   </StrictMode>,
 );

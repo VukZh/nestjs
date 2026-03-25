@@ -27,13 +27,16 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
+import { useCookies } from 'react-cookie';
+import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 
 type TagsProps = {
-  user?: UserType;
+  user?: Pick<UserType, 'id' | 'email' | 'role'>;
 };
 
 export const Tags = (props: TagsProps) => {
   const { user } = props;
+  const [cookies] = useCookies(['token']);
   const [selectedTag, setSelectedTag] = useDebouncedState('', 500);
   const [tags, setTags] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -68,19 +71,23 @@ export const Tags = (props: TagsProps) => {
       const data = await resp.json();
       setTags(data);
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleAdd = async (values: Pick<TagType, 'name'>) => {
     try {
       const { name } = values;
-      const resp = await fetch(`http://localhost:${PORT}/tags`, {
-        method: 'POST',
-        headers: getCommonHeaders(),
-        body: JSON.stringify({
-          name,
-        }),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/tags`,
+        {
+          method: 'POST',
+          headers: getCommonHeaders(),
+          body: JSON.stringify({
+            name,
+          }),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error adding tag', await resp.json());
         return;
@@ -89,15 +96,19 @@ export const Tags = (props: TagsProps) => {
       handleReload();
       close();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
   const handleDelete = async (id: string) => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/tags/${id}`, {
-        method: 'DELETE',
-        headers: getCommonHeaders(),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/tags/${id}`,
+        {
+          method: 'DELETE',
+          headers: getCommonHeaders(),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error deleting tag', await resp.json());
         return;
@@ -105,7 +116,7 @@ export const Tags = (props: TagsProps) => {
       showSuccessNotification('Tag successfully deleted!');
       handleReload();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 
@@ -121,7 +132,7 @@ export const Tags = (props: TagsProps) => {
         const data = await resp.json();
         formEdit.setValues(data);
       } catch (e) {
-        showErrorNotification('Error', e);
+        showErrorNotification('Error', e as Error);
       }
     };
     getTag(selectedTag);
@@ -130,13 +141,17 @@ export const Tags = (props: TagsProps) => {
   const handleUpdate = async (values: Pick<TagType, 'name'>) => {
     try {
       const { name } = values;
-      const resp = await fetch(`http://localhost:${PORT}/tags/${selectedTag}`, {
-        method: 'PATCH',
-        headers: getCommonHeaders(),
-        body: JSON.stringify({
-          name,
-        }),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/tags/${selectedTag}`,
+        {
+          method: 'PATCH',
+          headers: getCommonHeaders(),
+          body: JSON.stringify({
+            name,
+          }),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error updating tag', await resp.json());
         return;
@@ -145,7 +160,7 @@ export const Tags = (props: TagsProps) => {
       handleReload();
       closeEdit();
     } catch (e) {
-      showErrorNotification('Error', e);
+      showErrorNotification('Error', e as Error);
     }
   };
 

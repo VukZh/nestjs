@@ -57,6 +57,6 @@ export type CommentType = {
 export type SignInType = {
   email: string;
   password: string;
-}
+};
 
 export type SignUpType = SignInType;

@@ -28,13 +28,16 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
+import { useCookies } from 'react-cookie';
+import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 
 type CommentsProps = {
-  user?: UserType;
+  user?: Pick<UserType, 'id' | 'email' | 'role'>;
 };
 
 export const Comments = (props: CommentsProps) => {
   const { user } = props;
+  const [cookies] = useCookies(['token']);
   const [selectedComment, setSelectedComment] = useDebouncedState('', 500);
   const [comments, setComments] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
@@ -85,15 +88,19 @@ export const Comments = (props: CommentsProps) => {
     taskId: string;
   }) => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/comments`, {
-        method: 'POST',
-        headers: getCommonHeaders(),
-        body: JSON.stringify({
-          status: values.status,
-          content: values.content,
-          taskId: +values.taskId,
-        }),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/comments`,
+        {
+          method: 'POST',
+          headers: getCommonHeaders(),
+          body: JSON.stringify({
+            status: values.status,
+            content: values.content,
+            taskId: +values.taskId,
+          }),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error adding comment', await resp.json());
         return;
@@ -107,10 +114,14 @@ export const Comments = (props: CommentsProps) => {
   };
   const handleDelete = async (id: string) => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/comments/${id}`, {
-        method: 'DELETE',
-        headers: getCommonHeaders(),
-      });
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/comments/${id}`,
+        {
+          method: 'DELETE',
+          headers: getCommonHeaders(),
+        },
+        cookies.token,
+      );
       if (!resp.ok) {
         showErrorNotification('Error deleting comment', await resp.json());
         return;
@@ -145,7 +156,7 @@ export const Comments = (props: CommentsProps) => {
   ) => {
     try {
       const { status, content } = values;
-      const resp = await fetch(
+      const resp = await fetchWithAuth(
         `http://localhost:${PORT}/comments/${selectedComment}`,
         {
           method: 'PATCH',
@@ -155,6 +166,7 @@ export const Comments = (props: CommentsProps) => {
             content,
           }),
         },
+        cookies.token,
       );
       if (!resp.ok) {
         showErrorNotification('Error updating comment', await resp.json());

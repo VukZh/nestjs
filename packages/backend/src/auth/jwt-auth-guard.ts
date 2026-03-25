@@ -10,7 +10,10 @@ import { DBService } from '../db/db.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService, private readonly prisma: DBService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: DBService,
+  ) {}
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.split(' ')[1];
