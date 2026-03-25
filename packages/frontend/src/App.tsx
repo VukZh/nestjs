@@ -9,6 +9,7 @@ import type { UserType } from 'backend/dist/src/models/user.ts';
 import { showErrorNotification } from './utils/notifications.tsx';
 import { Auth } from './components/auth.tsx';
 import { useCookies } from 'react-cookie';
+import { fetchWithAuth } from './utils/fetchWithAuth.ts';
 
 export const PORT = import.meta.env.VITE_PORT;
 
@@ -18,6 +19,29 @@ function App() {
   >(undefined);
 
   const [cookies, setCookie, removeCookie] = useCookies(['token']);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        if (cookies.token && !currentUser) {
+          const response = await fetchWithAuth(
+            `http://localhost:${PORT}/auth/me`,
+            {},
+            cookies.token,
+          );
+          const data = await response.json();
+          if (!response.ok) {
+            showErrorNotification('Failed to get current user', data);
+          } else {
+            setCurrentUser(data);
+          }
+        }
+      } catch (e) {
+        showErrorNotification('Failed to get current user', e as Error);
+      }
+    };
+    getCurrentUser();
+  }, [cookies.token]);
 
   function handleSetToken(token: string) {
     setCookie('token', token, { path: '/' });
@@ -82,7 +106,7 @@ function App() {
                   Users
                 </AccordionControl>
                 <Accordion.Panel>
-                  <Users user={currentUser} />
+                  <Users />
                 </Accordion.Panel>
               </Accordion.Item>
               <Accordion.Item value="tags">
@@ -91,7 +115,7 @@ function App() {
                   Tags
                 </AccordionControl>
                 <Accordion.Panel>
-                  <Tags user={currentUser} />
+                  <Tags />
                 </Accordion.Panel>
               </Accordion.Item>
               <Accordion.Item value="comments">

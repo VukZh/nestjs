@@ -28,7 +28,9 @@ export class TagsService {
     return createdTag;
   }
   async getTagById(id: number) {
-    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
+    const tagExists = await this.prisma.tag.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!tagExists) return null;
 
     isLoggingEnabled && this.logger.debug(`get tag ${id}`);
@@ -38,7 +40,9 @@ export class TagsService {
     if (userRole !== 'admin') {
       throw new ForbiddenException('Only admin can delete tags');
     }
-    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
+    const tagExists = await this.prisma.tag.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!tagExists) return null;
 
     await this.prisma.tag.update({
@@ -53,13 +57,15 @@ export class TagsService {
     if (userRole !== 'admin') {
       throw new ForbiddenException('Only admin can update tags');
     }
-    const tagExists = await this.prisma.tag.findUnique({ where: { id } });
+    const tagExists = await this.prisma.tag.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!tagExists) return null;
 
     const { ...dataToUpdated } = tagUpdated;
 
     await this.prisma.tag.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data: {
         ...dataToUpdated,
         updatedAt: new Date(),

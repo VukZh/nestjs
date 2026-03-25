@@ -16,10 +16,7 @@ import {
   TbCategory,
 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import {
-  type TagType,
-  type UserType,
-} from '../../../backend/src/models/types.ts';
+import { type TagType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { PORT } from '../App.tsx';
@@ -30,12 +27,7 @@ import {
 import { useCookies } from 'react-cookie';
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 
-type TagsProps = {
-  user?: Pick<UserType, 'id' | 'email' | 'role'>;
-};
-
-export const Tags = (props: TagsProps) => {
-  const { user } = props;
+export const Tags = () => {
   const [cookies] = useCookies(['token']);
   const [selectedTag, setSelectedTag] = useDebouncedState('', 500);
   const [tags, setTags] = useState([]);
@@ -57,8 +49,6 @@ export const Tags = (props: TagsProps) => {
 
   const getCommonHeaders = () => ({
     'Content-Type': 'application/json',
-    'x-user-id': user?.id?.toString() || '',
-    'x-user-role': user?.role || '',
   });
 
   const handleReload = async () => {

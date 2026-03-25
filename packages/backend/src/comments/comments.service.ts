@@ -40,7 +40,7 @@ export class CommentsService {
 
   async getCommentById(id: number) {
     const commentExists = await this.prisma.comment.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: { author: true, task: true },
     });
     if (!commentExists) return null;
@@ -53,7 +53,9 @@ export class CommentsService {
     id: number,
     currentUser: { id: number; role: string },
   ) {
-    const comment = await this.prisma.comment.findUnique({ where: { id } });
+    const comment = await this.prisma.comment.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!comment) return null;
 
     if (currentUser.role !== 'admin' && comment.authorId !== currentUser.id) {
@@ -75,7 +77,7 @@ export class CommentsService {
     currentUser: { id: number; role: string },
   ) {
     const comment = await this.prisma.comment.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: { task: true },
     });
     if (!comment) return null;

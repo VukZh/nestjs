@@ -36,8 +36,11 @@ export class UsersController {
   }
 
   @Post()
-  createUser(@Body() user: CreatedUserDto) {
-    return this.usersService.createUser(user);
+  createUser(
+    @Body() user: CreatedUserDto,
+    @Req() req: Request & { user: { role: string } },
+  ) {
+    return this.usersService.createUser(user, req.user.role);
   }
 
   @Patch(':id')

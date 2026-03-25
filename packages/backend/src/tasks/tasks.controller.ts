@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth-guard';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @SkipThrottle()
+@ApiBearerAuth()
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {

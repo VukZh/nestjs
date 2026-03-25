@@ -79,7 +79,7 @@ export class TasksService {
 
   async getTaskById(id: number) {
     const taskExists = await this.prisma.task.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: { tags: true, author: true, comments: true },
     });
     if (!taskExists) return null;
@@ -89,7 +89,9 @@ export class TasksService {
   }
 
   async deleteTaskById(id: number, currentUser: { id: number; role: string }) {
-    const task = await this.prisma.task.findUnique({ where: { id } });
+    const task = await this.prisma.task.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!task) return null;
 
     if (currentUser.role !== 'admin' && task.authorId !== currentUser.id) {
@@ -109,7 +111,9 @@ export class TasksService {
     taskUpdated: UpdatedTaskDto,
     currentUser: { id: number; role: string },
   ) {
-    const task = await this.prisma.task.findUnique({ where: { id } });
+    const task = await this.prisma.task.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!task) return null;
 
     if (currentUser.role !== 'admin' && task.authorId !== currentUser.id) {
@@ -119,7 +123,7 @@ export class TasksService {
     const { tagIds, authorId, comment, ...dataToUpdated } = taskUpdated;
 
     await this.prisma.task.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data: {
         ...dataToUpdated,
         updatedAt: new Date(),

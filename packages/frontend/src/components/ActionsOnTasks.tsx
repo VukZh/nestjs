@@ -205,15 +205,17 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
         comment: values.comment,
         authorId: user?.id,
       };
-      const resp = await fetch(`http://localhost:${PORT}/tasks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-role': user?.role || '',
+      const resp = await fetchWithAuth(
+        `http://localhost:${PORT}/tasks`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+        cookies.token,
+      );
       if (resp.ok) {
         close();
         form.reset();
@@ -235,8 +237,6 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-id': user?.id?.toString() || '',
-            'x-user-role': user?.role || '',
           },
         },
         cookies.token,
@@ -260,8 +260,10 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
       return;
     }
     try {
-      const resp = await fetch(
+      const resp = await fetchWithAuth(
         `http://localhost:${PORT}/tasks/${selectedTaskId}`,
+        {},
+        cookies.token,
       );
       if (resp.ok) {
         const data = (await resp.json()) as TaskExtendedType;
@@ -302,8 +304,6 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-id': user?.id?.toString() || '',
-            'x-user-role': user?.role || '',
           },
           body: JSON.stringify(payload),
         },

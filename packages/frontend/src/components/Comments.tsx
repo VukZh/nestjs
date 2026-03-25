@@ -61,8 +61,6 @@ export const Comments = (props: CommentsProps) => {
 
   const getCommonHeaders = () => ({
     'Content-Type': 'application/json',
-    'x-user-id': user?.id?.toString() || '',
-    'x-user-role': user?.role || '',
   });
 
   const handleReload = async () => {

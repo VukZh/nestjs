@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedUserDto, UpdatedUserDto, UserType } from '../models/user';
 import { DBService } from '../db/db.service';
 import { isLoggingEnabled } from '../main';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
@@ -16,16 +17,25 @@ export class UsersService {
     isLoggingEnabled && this.logger.debug('get all users');
     return users;
   }
-  async createUser(user: CreatedUserDto) {
+  async createUser(user: CreatedUserDto, userRole: string) {
+    if (userRole !== 'admin') {
+      throw new ForbiddenException('Only admin can create users');
+    }
     const createdUser = await this.prisma.user.create({
-      data: { ...user, deletedAt: null },
+      data: {
+        ...user,
+        password: await argon2.hash(user.password),
+        deletedAt: null,
+      },
     });
     isLoggingEnabled && this.logger.debug('add user', user);
 
     return createdUser;
   }
   async getUserById(id: number) {
-    const userExists = await this.prisma.user.findUnique({ where: { id } });
+    const userExists = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!userExists) return null;
 
     isLoggingEnabled && this.logger.debug(`get user ${id}`);
@@ -35,7 +45,9 @@ export class UsersService {
     if (userRole !== 'admin') {
       throw new ForbiddenException('Only admin can delete users');
     }
-    const userExists = await this.prisma.user.findUnique({ where: { id } });
+    const userExists = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!userExists) return null;
 
     await this.prisma.user.update({
@@ -55,7 +67,9 @@ export class UsersService {
       throw new ForbiddenException('Only admin can update role or status');
     }
 
-    const userExists = await this.prisma.user.findUnique({ where: { id } });
+    const userExists = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+    });
     if (!userExists) return null;
 
     const { ...dataToUpdated } = userUpdated;

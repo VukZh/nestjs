@@ -26,7 +26,7 @@ export class AuthService {
       this.logger.debug('Trying to sign up: ', signUpDto.email);
     const usersCount = await this.prisma.user.count();
     const UserExists = await this.prisma.user.findUnique({
-      where: { email: signUpDto.email },
+      where: { email: signUpDto.email, deletedAt: null },
     });
     if (UserExists) throw new ConflictException('User already exists');
     const hashedPassword = await argon2.hash(signUpDto.password);
@@ -47,7 +47,7 @@ export class AuthService {
     isLoggingEnabled &&
       this.logger.debug('Trying to sign in: ', signInDto.email);
     const UserExists = await this.prisma.user.findUnique({
-      where: { email: signInDto.email },
+      where: { email: signInDto.email, deletedAt: null },
     });
     if (!UserExists) throw new NotFoundException('User not found');
     if (UserExists.status === 'blocked') {

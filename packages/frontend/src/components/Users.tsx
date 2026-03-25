@@ -28,12 +28,7 @@ import {
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 import { useCookies } from 'react-cookie';
 
-type UsersProps = {
-  user?: Pick<UserType, 'id' | 'email' | 'role'>;
-};
-
-export const Users = (props: UsersProps) => {
-  const { user } = props;
+export const Users = () => {
   const [cookies] = useCookies(['token']);
   const [selectedUser, setSelectedUser] = useDebouncedState('', 500);
   const [users, setUsers] = useState([]);
@@ -47,6 +42,7 @@ export const Users = (props: UsersProps) => {
       email: '',
       role: 'user',
       status: 'active',
+      password: '',
     },
   });
   const formEdit = useForm({
@@ -61,8 +57,6 @@ export const Users = (props: UsersProps) => {
 
   const getCommonHeaders = () => ({
     'Content-Type': 'application/json',
-    'x-user-id': user?.id?.toString() || '',
-    'x-user-role': user?.role || '',
   });
 
   const handleReload = async () => {
@@ -83,10 +77,10 @@ export const Users = (props: UsersProps) => {
     }
   };
   const handleAdd = async (
-    values: Pick<UserType, 'name' | 'email' | 'role' | 'status'>,
+    values: Pick<UserType, 'name' | 'email' | 'role' | 'status' | 'password'>,
   ) => {
     try {
-      const { name, email, role, status } = values;
+      const { name, email, role, status, password } = values;
       const resp = await fetchWithAuth(
         `http://localhost:${PORT}/users`,
         {
@@ -97,6 +91,7 @@ export const Users = (props: UsersProps) => {
             email,
             role,
             status,
+            password,
           }),
         },
         cookies.token,
@@ -224,7 +219,10 @@ export const Users = (props: UsersProps) => {
         <form
           onSubmit={form.onSubmit((values) =>
             handleAdd(
-              values as Pick<UserType, 'name' | 'email' | 'role' | 'status'>,
+              values as Pick<
+                UserType,
+                'name' | 'email' | 'role' | 'status' | 'password'
+              >,
             ),
           )}
         >
@@ -260,6 +258,14 @@ export const Users = (props: UsersProps) => {
             data={['active', 'blocked']}
             key={form.key('status')}
             {...form.getInputProps('status')}
+          />
+
+          <TextInput
+            withAsterisk
+            label="Password"
+            placeholder="password"
+            key={form.key('password')}
+            {...form.getInputProps('password')}
           />
 
           <Group justify="flex-end" mt="md">

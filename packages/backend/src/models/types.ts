@@ -12,6 +12,7 @@ export type UserType = {
   createdAt: Date | string;
   updatedAt: Date | string;
   deletedAt: Date | string | null;
+  password: string;
 };
 
 export type TaskStatusType = 'draft' | 'published';
