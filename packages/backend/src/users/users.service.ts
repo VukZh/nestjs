@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedUserDto, UpdatedUserDto, UserType } from '../models/user';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from '../main';
+import { isLoggingEnabled } from '../config';
 import * as argon2 from 'argon2';
 
 @Injectable()

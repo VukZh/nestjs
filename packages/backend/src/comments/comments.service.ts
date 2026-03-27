@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedCommentDto, UpdatedCommentDto } from '../models/comment';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from '../main';
+import { isLoggingEnabled } from '../config';
 
 @Injectable()
 export class CommentsService {

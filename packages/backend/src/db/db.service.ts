@@ -5,11 +5,10 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const DB_URL = process.env.DATABASE_URL;
-
 @Injectable()
 export class DBService extends PrismaClient {
   constructor() {
+    const DB_URL = process.env.DATABASE_URL;
     console.log('DB_URL: ', DB_URL);
     const adapter = new PrismaPg({
       connectionString: DB_URL,

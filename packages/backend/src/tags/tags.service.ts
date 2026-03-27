@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { CreatedTagDto, UpdatedTagDto } from '../models/tag';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from '../main';
+import { isLoggingEnabled } from '../config';
 
 @Injectable()
 export class TagsService {

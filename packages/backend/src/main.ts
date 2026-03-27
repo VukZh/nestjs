@@ -9,7 +9,7 @@ import helmet from 'helmet';
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
-export const isLoggingEnabled = process.env.LOG_DEBUG === 'true' || false;
+
 const FE_URL = process.env.FE_URL || 'http://localhost:5173';
 
 async function bootstrap() {
@@ -65,4 +65,7 @@ async function bootstrap() {
     `Swagger documentation is available at http://localhost:${PORT}/api`,
   );
 }
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Error starting the application:', error);
+});
+

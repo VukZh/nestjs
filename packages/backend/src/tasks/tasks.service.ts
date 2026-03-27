@@ -7,7 +7,7 @@ import {
   GetTasksDto,
 } from '../models/task';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from '../main';
+import { isLoggingEnabled } from '../config';
 
 @Injectable()
 export class TasksService {

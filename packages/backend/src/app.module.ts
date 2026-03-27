@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
+const isTest = process.env.NODE_ENV === 'test';
+
 @Module({
   imports: [
     UsersModule,
@@ -18,22 +20,30 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     CommentsModule,
     DbModule,
     AuthModule,
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 60000,
-          limit: 20,
-        },
-      ],
-    }),
+    ...(isTest
+      ? []
+      : [
+          ThrottlerModule.forRoot({
+            throttlers: [
+              {
+                ttl: 60000,
+                limit: 20,
+              },
+            ],
+          }),
+        ]),
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    ...(isTest
+      ? []
+      : [
+          {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+          },
+        ]),
   ],
 })
 export class AppModule {}

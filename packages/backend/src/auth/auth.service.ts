@@ -9,7 +9,7 @@ import { SignInDto, SignUpDto } from '../models/auth';
 
 import * as argon2 from 'argon2';
 import { DBService } from '../db/db.service';
-import { isLoggingEnabled } from '../main';
+import { isLoggingEnabled } from '../config';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
