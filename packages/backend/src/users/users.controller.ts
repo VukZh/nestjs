@@ -74,7 +74,9 @@ export class UsersController {
     };
   }
   @Get(':id')
-  getUser(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getUserById(id);
+  async getUser(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.usersService.getUserById(id);
+    if (!user) throw new NotFoundException(`User ${id} not found`);
+    return user;
   }
 }

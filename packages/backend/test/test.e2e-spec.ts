@@ -13,10 +13,15 @@ describe('E2E Tests', () => {
     await startDatabase();
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .compile();
+    }).compile();
     app = moduleFixture.createNestApplication() as INestApplication;
-    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
     await app.init();
   });
 
@@ -30,6 +35,6 @@ describe('E2E Tests', () => {
     return request(app.getHttpAdapter().getInstance())
       .get('/')
       .expect(200)
-      .expect(JSON.stringify({message: 'Hello World!'}));
+      .expect(JSON.stringify({ message: 'Hello World!' }));
   });
 });
