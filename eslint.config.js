@@ -1,55 +1,37 @@
 import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
-export default [
+export default tseslint.config(
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   prettierConfig,
   {
     plugins: {
       prettier,
     },
-    rules: {
-      'prettier/prettier': 'warn',
-
-      'no-unused-vars': 'warn',
-      'no-console': 'off',
-      'no-debugger': 'warn',
-      'no-empty': 'warn',
-      'no-extra-semi': 'warn',
-      'no-unreachable': 'warn',
-      'no-undef': 'warn',
-      'prefer-const': 'off',
-      'no-var': 'off',
-      eqeqeq: 'off',
-      curly: 'off',
-      'no-prototype-builtins': 'off',
-      'no-useless-escape': 'warn',
-      'no-constant-condition': 'warn',
-    },
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
-        window: 'readonly',
-        document: 'readonly',
-        fetch: 'readonly',
-        setTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearTimeout: 'readonly',
-        clearInterval: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
-    ignores: ['node_modules/**', 'dist/**', 'build/**'],
+    rules: {
+      'prettier/prettier': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+      'no-console': 'off',
+    },
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      'packages/backend/generated/**',
+      'eslint.config.js',
+    ],
   },
-];
+);

@@ -68,4 +68,3 @@ async function bootstrap() {
 bootstrap().catch((error) => {
   console.error('Error starting the application:', error);
 });
-
