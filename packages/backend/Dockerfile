@@ -7,6 +7,7 @@ RUN npm install
 RUN npx prisma generate
 COPY . .
 RUN npm run build
+RUN npm prune --production
 
 FROM node:24-alpine AS runner
 WORKDIR /app
