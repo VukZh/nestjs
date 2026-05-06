@@ -63,20 +63,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Get Lowercase Repository Name
-        run: |
-          echo "REPO_LOWER=${GITHUB_REPOSITORY_OWNER,,}" >> ${GITHUB_ENV}
       - name: Build and push Backend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: packages/backend/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_LOWER }}/nestjs-backend:latest
+          tags: ghcr.io/${{ github.vukzh }}/nestjs-backend:latest
       - name: Build and push Frontend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: packages/frontend/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.REPO_LOWER }}/nestjs-frontend:latest
+          tags: ghcr.io/${{ github.vukzh }}/nestjs-frontend:latest
