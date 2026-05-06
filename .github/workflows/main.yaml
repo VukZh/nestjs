@@ -72,11 +72,11 @@ jobs:
           context: .
           file: packages/backend/Dockerfile
           push: true
-          tags: ghcr.io/${{ OWNER_LC }}/nestjs-backend:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/nestjs-backend:latest
       - name: Build and push Frontend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: packages/frontend/Dockerfile
           push: true
-          tags: ghcr.io/${{ OWNER_LC }}/nestjs-frontend:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/nestjs-frontend:latest
