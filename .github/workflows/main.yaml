@@ -39,6 +39,7 @@ jobs:
         env:
           DATABASE_URL: postgres://user:password@localhost:5432/test_db?schema=public
           JWT_SECRET: secret
+          NODE_PATH: ${{ github.workspace }}/node_modules
         run: |
           cd packages/backend
           npx prisma generate
