@@ -46,7 +46,7 @@ jobs:
           npx prisma migrate deploy
           npm run test:e2e
       - name: Build backend check
-        run:
+        run: |
           cd packages/backend
           npm run build
   build-and-push:
