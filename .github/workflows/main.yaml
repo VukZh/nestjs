@@ -37,7 +37,7 @@ jobs:
         run: npm run lint -w packages/backend
       - name: Test backend
         env:
-          DATABASE_URL: postgres://user:password@postgres:5432/test_db?schema=public
+          DATABASE_URL: postgres://user:password@localhost:5432/test_db?schema=public
           JWT_SECRET: secret
         run: |
           cd packages/backend
