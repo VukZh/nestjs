@@ -40,6 +40,7 @@ jobs:
           DATABASE_URL: postgres://user:password@localhost:5432/test_db?schema=public
           JWT_SECRET: secret
         run: |
+          rm -rf node_modules
           cd packages/backend
           npm install
           npx prisma generate
