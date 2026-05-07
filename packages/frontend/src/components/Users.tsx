@@ -20,13 +20,13 @@ import { useEffect, useState } from 'react';
 import { type UserType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { PORT } from '../App.tsx';
 import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 import { useCookies } from 'react-cookie';
+import { API_URL } from '../config.ts';
 
 export const Users = () => {
   const [cookies] = useCookies(['token']);
@@ -62,7 +62,7 @@ export const Users = () => {
   const handleReload = async () => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/users`,
+        `${API_URL}/users`,
         {},
         cookies.token,
       );
@@ -82,7 +82,7 @@ export const Users = () => {
     try {
       const { name, email, role, status, password } = values;
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/users`,
+        `${API_URL}/users`,
         {
           method: 'POST',
           headers: getCommonHeaders(),
@@ -110,7 +110,7 @@ export const Users = () => {
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/users/${id}`,
+        `${API_URL}/users/${id}`,
         {
           method: 'DELETE',
           headers: getCommonHeaders(),
@@ -133,7 +133,7 @@ export const Users = () => {
       if (!id) return;
       try {
         const resp = await fetchWithAuth(
-          `http://localhost:${PORT}/users/${id}`,
+          `${API_URL}/users/${id}`,
           {},
           cookies.token,
         );
@@ -156,7 +156,7 @@ export const Users = () => {
     try {
       const { name, email, role, status } = values;
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/users/${selectedUser}`,
+        `${API_URL}/users/${selectedUser}`,
         {
           method: 'PATCH',
           headers: getCommonHeaders(),

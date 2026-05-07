@@ -10,8 +10,7 @@ import { showErrorNotification } from './utils/notifications.tsx';
 import { Auth } from './components/auth.tsx';
 import { useCookies } from 'react-cookie';
 import { fetchWithAuth } from './utils/fetchWithAuth.ts';
-
-export const PORT = import.meta.env.VITE_PORT;
+import { API_URL } from './config.ts';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<
@@ -25,7 +24,7 @@ function App() {
       try {
         if (cookies.token && !currentUser) {
           const response = await fetchWithAuth(
-            `http://localhost:${PORT}/auth/me`,
+            `${API_URL}/auth/me`,
             {},
             cookies.token,
           );
@@ -56,7 +55,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://localhost:${PORT}`);
+        const response = await fetch(`${API_URL}`);
         const data = await response.json();
         if (!response.ok) {
           showErrorNotification('Server check failed', data);

@@ -5,11 +5,11 @@ import {
   type UserType,
 } from '../../../backend/src/models/types.ts';
 import { Button, Group, TextInput, Tabs } from '@mantine/core';
-import { PORT } from '../App.tsx';
 import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
+import { API_URL } from '../config.ts';
 
 type AuthType = {
   setToken: (token: string) => void;
@@ -28,7 +28,7 @@ export const Auth = ({ setToken, setUser }: AuthType) => {
   });
 
   const handleSignIn = async (values: SignInType) => {
-    const resp = await fetch(`http://localhost:${PORT}/auth/signin`, {
+    const resp = await fetch(`${API_URL}/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ export const Auth = ({ setToken, setUser }: AuthType) => {
 
   const handleSignUp = async (values: SignUpType) => {
     console.log(values);
-    const resp = await fetch(`http://localhost:${PORT}/auth/signup`, {
+    const resp = await fetch(`${API_URL}/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

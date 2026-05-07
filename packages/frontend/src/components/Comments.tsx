@@ -23,13 +23,13 @@ import {
 } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { PORT } from '../App.tsx';
 import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
 import { useCookies } from 'react-cookie';
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
+import { API_URL } from '../config.ts';
 
 type CommentsProps = {
   user?: Pick<UserType, 'id' | 'email' | 'role'>;
@@ -67,8 +67,8 @@ export const Comments = (props: CommentsProps) => {
     try {
       const url =
         user?.role === 'admin'
-          ? `http://localhost:${PORT}/comments?all=true`
-          : `http://localhost:${PORT}/comments`;
+          ? `${API_URL}/comments?all=true`
+          : `${API_URL}/comments`;
       const resp = await fetch(url);
       if (!resp.ok) {
         showErrorNotification('Error loading comments', await resp.json());
@@ -87,7 +87,7 @@ export const Comments = (props: CommentsProps) => {
   }) => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/comments`,
+        `${API_URL}/comments`,
         {
           method: 'POST',
           headers: getCommonHeaders(),
@@ -113,7 +113,7 @@ export const Comments = (props: CommentsProps) => {
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/comments/${id}`,
+        `${API_URL}/comments/${id}`,
         {
           method: 'DELETE',
           headers: getCommonHeaders(),
@@ -135,7 +135,7 @@ export const Comments = (props: CommentsProps) => {
     const getComment = async (id: string) => {
       if (!id) return;
       try {
-        const resp = await fetch(`http://localhost:${PORT}/comments/${id}`);
+        const resp = await fetch(`${API_URL}/comments/${id}`);
         if (!resp.ok) {
           showErrorNotification('Error loading comment', await resp.json());
           return;
@@ -155,7 +155,7 @@ export const Comments = (props: CommentsProps) => {
     try {
       const { status, content } = values;
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/comments/${selectedComment}`,
+        `${API_URL}/comments/${selectedComment}`,
         {
           method: 'PATCH',
           headers: getCommonHeaders(),

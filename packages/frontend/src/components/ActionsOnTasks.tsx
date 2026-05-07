@@ -32,9 +32,9 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
-import { PORT } from '../App.tsx';
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
 import { useCookies } from 'react-cookie';
+import { API_URL } from '../config.ts';
 
 type TaskExtendedType = TaskType & {
   comments: { content: string }[];
@@ -105,7 +105,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
 
   const handleGetTags = async () => {
     try {
-      const response = await fetch(`http://localhost:${PORT}/tags`);
+      const response = await fetch(`${API_URL}/tags`);
       if (!response.ok) {
         showErrorNotification('Error loading tags', await response.json());
         return;
@@ -144,7 +144,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
         params.append('status', filterState.status);
       }
       const response = await fetch(
-        `http://localhost:${PORT}/tasks?${params.toString()}`,
+        `${API_URL}/tasks?${params.toString()}`,
       );
       if (!response.ok) {
         showErrorNotification('Error loading tasks', await response.json());
@@ -206,7 +206,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
         authorId: user?.id,
       };
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tasks`,
+        `${API_URL}/tasks`,
         {
           method: 'POST',
           headers: {
@@ -232,7 +232,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tasks/${id}`,
+        `${API_URL}/tasks/${id}`,
         {
           method: 'DELETE',
           headers: {
@@ -261,7 +261,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
     }
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tasks/${selectedTaskId}`,
+        `${API_URL}/tasks/${selectedTaskId}`,
         {},
         cookies.token,
       );
@@ -299,7 +299,7 @@ export const ActionsOnTasks = ({ user }: ActionsOnTasksType) => {
         comment: values.comment,
       };
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tasks/${selectedTaskId}`,
+        `${API_URL}/tasks/${selectedTaskId}`,
         {
           method: 'PATCH',
           headers: {

@@ -19,13 +19,13 @@ import { useEffect, useState } from 'react';
 import { type TagType } from '../../../backend/src/models/types.ts';
 import { useDebouncedState, useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
-import { PORT } from '../App.tsx';
 import {
   showErrorNotification,
   showSuccessNotification,
 } from '../utils/notifications.tsx';
 import { useCookies } from 'react-cookie';
 import { fetchWithAuth } from '../utils/fetchWithAuth.ts';
+import { API_URL } from '../config.ts';
 
 export const Tags = () => {
   const [cookies] = useCookies(['token']);
@@ -53,7 +53,7 @@ export const Tags = () => {
 
   const handleReload = async () => {
     try {
-      const resp = await fetch(`http://localhost:${PORT}/tags`);
+      const resp = await fetch(`${API_URL}/tags`);
       if (!resp.ok) {
         showErrorNotification('Error loading tags', await resp.json());
         return;
@@ -68,7 +68,7 @@ export const Tags = () => {
     try {
       const { name } = values;
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tags`,
+        `${API_URL}/tags`,
         {
           method: 'POST',
           headers: getCommonHeaders(),
@@ -92,7 +92,7 @@ export const Tags = () => {
   const handleDelete = async (id: string) => {
     try {
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tags/${id}`,
+        `${API_URL}/tags/${id}`,
         {
           method: 'DELETE',
           headers: getCommonHeaders(),
@@ -114,7 +114,7 @@ export const Tags = () => {
     const getTag = async (id: string) => {
       if (!id) return;
       try {
-        const resp = await fetch(`http://localhost:${PORT}/tags/${id}`);
+        const resp = await fetch(`${API_URL}/tags/${id}`);
         if (!resp.ok) {
           showErrorNotification('Error loading tag', await resp.json());
           return;
@@ -132,7 +132,7 @@ export const Tags = () => {
     try {
       const { name } = values;
       const resp = await fetchWithAuth(
-        `http://localhost:${PORT}/tags/${selectedTag}`,
+        `${API_URL}/tags/${selectedTag}`,
         {
           method: 'PATCH',
           headers: getCommonHeaders(),
