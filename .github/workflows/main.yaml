@@ -79,4 +79,6 @@ jobs:
           context: .
           file: packages/frontend/Dockerfile
           push: true
+          build-args: |
+            VITE_API_URL=${{ vars.VITE_API_URL }}
           tags: ghcr.io/${{ env.OWNER_LC }}/nestjs-frontend:latest
