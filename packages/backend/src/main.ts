@@ -27,7 +27,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: FE_URL,
+    origin: '*',
     methods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     credentials: true,
   });
