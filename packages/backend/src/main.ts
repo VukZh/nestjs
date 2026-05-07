@@ -27,7 +27,18 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: '*',
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.includes('localhost') ||
+        origin.includes('onrender.com') ||
+        origin === process.env.FE_URL
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     credentials: true,
   });
